@@ -1,0 +1,36 @@
+# Build output
+/build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary editor files
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+
+# IDE / Editor folders (optional)
+.vscode/
+.idea/
+
+# MacOS-specific metadata
+.AppleDouble
+.LSOverride
+
+# Compiled object files (if you ever separate .o files)
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Backup archives
+*.zip
+*.tar.gz
+*.tar
+*.7z
+
