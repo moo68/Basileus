@@ -6,6 +6,7 @@
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void process_input(GLFWwindow *window);
 
 
@@ -21,6 +22,7 @@ const char *fragmentShaderSource = "#version 410 core\n"
     "{\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\n\0";
+bool is_wireframe = false;
 
 
 int main() { 
@@ -48,6 +50,7 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     // Load OpenGL
     int version = gladLoadGL(glfwGetProcAddress);
@@ -149,10 +152,21 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void process_input(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     } 
+    else if (!is_wireframe && key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
+        is_wireframe = true;
+    }
+    else if (is_wireframe && key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
+        is_wireframe = false;
+    }
+}
+
+void process_input(GLFWwindow *window) {
+    
 }
 
