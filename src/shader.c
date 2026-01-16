@@ -57,3 +57,22 @@ unsigned int create_shader(GLchar *shader_source, GLenum shader_type) {
     return shader;
 }
 
+unsigned int create_shader_program(unsigned int shader_list[], size_t length) {
+    unsigned int shader_program = glCreateProgram();
+ 
+    for (size_t i = 0; i < length; i++) {
+        glAttachShader(shader_program, shader_list[i]);
+    } 
+    glLinkProgram(shader_program);
+
+    int success;
+    char info_log[512];
+    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shader_program, 512, NULL, info_log);
+        printf("ERROR! Shader linking failed:\n%s\n", info_log);
+    }
+
+    return shader_program;
+}
+

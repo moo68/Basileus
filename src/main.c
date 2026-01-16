@@ -31,7 +31,7 @@ int main() {
 
     const int WINDOW_WIDTH = 1280;
     const int WINDOW_HEIGHT = 720;
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Basileus", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Basileus", NULL, NULL);
     if (!window) {
         printf("ERROR: GLFW failed to create a window!\n");
         glfwTerminate();
@@ -62,16 +62,12 @@ int main() {
     unsigned int vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
     unsigned int fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
 
-    unsigned int shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
+    unsigned int shader_list[2];
+    shader_list[0] = vertex_shader;
+    shader_list[1] = fragment_shader;
 
-    /*glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-        printf("ERROR! Shader linking failed:\n%s\n", info_log);
-    }*/
+    unsigned int shader_program = create_shader_program(&shader_list, 2);
+
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
