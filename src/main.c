@@ -6,7 +6,7 @@
 #include <cglm/cglm.h>
 #include <stb_image.h>
 
-#include "basileus/shader.h"
+#include "basileus/shader_utils.h"
 
 
 GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
@@ -87,13 +87,12 @@ int main(void) {
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);    
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
+
     int width, height, nrChannels;
     unsigned char *data = stbi_load("assets/textures/bricks.jpg", &width, &height, &nrChannels, 0);
     if (data) {
@@ -103,6 +102,7 @@ int main(void) {
     else {
         fprintf(stderr, "ERROR: Failed to load texture!");
     }
+
     stbi_image_free(data);
     
     // Render Loop
@@ -115,6 +115,7 @@ int main(void) {
         glBindTexture(GL_TEXTURE_2D, texture);
 
         glUseProgram(shader_program);
+
         glBindVertexArray(vao); 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

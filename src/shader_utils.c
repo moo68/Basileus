@@ -1,4 +1,4 @@
-#include "basileus/shader.h"
+#include "basileus/shader_utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
