@@ -59,39 +59,19 @@ int main() {
     const char *vertex_shader_source = read_shader_file("assets/shaders/vertex.glsl");
     const char *fragment_shader_source = read_shader_file("assets/shaders/fragment.glsl"); 
 
-    unsigned int vertex_shader;
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
-    glCompileShader(vertex_shader);
-
-    int success;
-    char info_log[512];
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-        printf("ERROR! Vertex shader compilation failed:\n%s\n", info_log);
-    }
-
-    unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
-    glCompileShader(fragment_shader);
-
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-        printf("ERROR! Fragment shader compilation failed:\n%s\n", info_log);
-    }
+    unsigned int vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
+    unsigned int fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
 
     unsigned int shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+    /*glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shader_program, 512, NULL, info_log);
         printf("ERROR! Shader linking failed:\n%s\n", info_log);
-    }
+    }*/
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
