@@ -7,6 +7,7 @@
 #include "basileus/shader.h"
 
 
+GLFWwindow* create_window_and_context(const int width, const int height, const char *name);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void process_input(GLFWwindow *window);
@@ -16,44 +17,13 @@ bool is_wireframe = false;
 
 
 int main(void) { 
-    // Load GLFW
-    if (!glfwInit()) {
-        printf("ERROR: GLFW failed to initialize!\n");
-        return -1;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
+    // Load GLFW and OpenGL
     const int WINDOW_WIDTH = 1280;
     const int WINDOW_HEIGHT = 720;
-    GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Basileus", NULL, NULL);
-    if (!window) {
-        fprintf(stderr, "ERROR: GLFW failed to create a window!\n");
-        glfwTerminate();
-        return -1;
-    }
+    GLFWwindow* window = create_window_and_context(WINDOW_WIDTH, WINDOW_HEIGHT, "Basileus");
 
-    glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetKeyCallback(window, key_callback);
-
-    // Load OpenGL
-    int version = gladLoadGL(glfwGetProcAddress);
-    if (version == 0) {
-        fprintf(stderr, "ERROR: GLAD failed to initialize!\n");
-        return -1;
-    }
-    else {
-        fprintf(stdout, "INFO: Loaded OpenGL version %d.%d\n", GLAD_VERSION_MAJOR(version), 
-                GLAD_VERSION_MINOR(version));
-    }
-
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glfwSetKeyCallback(window, key_callback); 
 
     // Shaders
     const char *vertex_shader_source = read_shader_file("assets/shaders/vertex.glsl");
@@ -122,6 +92,7 @@ int main(void) {
         glfwPollEvents();
     }
 
+    // Shutdown cleanup
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
@@ -131,6 +102,42 @@ int main(void) {
     return 0;
 }
 
+
+GLFWwindow* create_window_and_context(const int width, const int height, const char *name) {
+    if (!glfwInit()) {
+        printf("ERROR: GLFW failed to initialize!\n");
+        return NULL;
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+ 
+    GLFWwindow *window = glfwCreateWindow(width, height, name, NULL, NULL);
+    if (!window) {
+        fprintf(stderr, "ERROR: GLFW failed to create a window!\n");
+        glfwTerminate();
+        return NULL;
+    } 
+    glfwMakeContextCurrent(window);
+ 
+    int version = gladLoadGL(glfwGetProcAddress);
+    if (version == 0) {
+        fprintf(stderr, "ERROR: GLAD failed to initialize!\n");
+        return NULL;
+    }
+    else {
+        fprintf(stdout, "INFO: Loaded OpenGL version %d.%d\n", GLAD_VERSION_MAJOR(version), 
+                GLAD_VERSION_MINOR(version));
+    }
+
+    glViewport(0, 0, width, height);
+
+    return window;
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     (void)window;
