@@ -15,7 +15,7 @@ void process_input(GLFWwindow *window);
 bool is_wireframe = false;
 
 
-int main() { 
+int main(void) { 
     // Load GLFW
     if (!glfwInit()) {
         printf("ERROR: GLFW failed to initialize!\n");
@@ -66,7 +66,7 @@ int main() {
     shader_list[0] = vertex_shader;
     shader_list[1] = fragment_shader;
 
-    unsigned int shader_program = create_shader_program(&shader_list, 2);
+    unsigned int shader_program = create_shader_program(shader_list, 2);
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
@@ -127,10 +127,14 @@ int main() {
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    (void)window;
     glViewport(0, 0, width, height);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    (void)scancode;
+    (void)mods;
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     } 
@@ -145,6 +149,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 void process_input(GLFWwindow *window) {
-    
+    (void)window;
 }
 

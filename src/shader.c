@@ -40,7 +40,7 @@ char *read_shader_file(char* filepath) {
     return shader_source;
 }
 
-unsigned int create_shader(GLchar *shader_source, GLenum shader_type) {
+unsigned int create_shader(const GLchar *shader_source, GLenum shader_type) {
     unsigned int shader;
     shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &shader_source, NULL);
