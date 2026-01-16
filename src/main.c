@@ -1,8 +1,10 @@
+#include <stdio.h>
+#include <stdbool.h>
+
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-#include <stdio.h>
-#include <stdbool.h>
+#include "basileus/shader.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -10,18 +12,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void process_input(GLFWwindow *window);
 
 
-const char *vertex_shader_source = "#version 410 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragment_shader_source = "#version 410 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
 bool is_wireframe = false;
 
 
@@ -66,6 +56,9 @@ int main() {
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Shaders
+    const char *vertex_shader_source = read_shader_file("assets/shaders/vertex.glsl");
+    const char *fragment_shader_source = read_shader_file("assets/shaders/fragment.glsl"); 
+
     unsigned int vertex_shader;
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
