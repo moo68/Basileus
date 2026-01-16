@@ -33,7 +33,7 @@ int main(void) {
     const int WINDOW_HEIGHT = 720;
     GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Basileus", NULL, NULL);
     if (!window) {
-        printf("ERROR: GLFW failed to create a window!\n");
+        fprintf(stderr, "ERROR: GLFW failed to create a window!\n");
         glfwTerminate();
         return -1;
     }
@@ -45,11 +45,11 @@ int main(void) {
     // Load OpenGL
     int version = gladLoadGL(glfwGetProcAddress);
     if (version == 0) {
-        printf("ERROR: GLAD failed to initialize!\n");
+        fprintf(stderr, "ERROR: GLAD failed to initialize!\n");
         return -1;
     }
     else {
-        printf("INFO: Loaded OpenGL version %d.%d\n", GLAD_VERSION_MAJOR(version), 
+        fprintf(stdout, "INFO: Loaded OpenGL version %d.%d\n", GLAD_VERSION_MAJOR(version), 
                 GLAD_VERSION_MINOR(version));
     }
 
@@ -57,7 +57,13 @@ int main(void) {
 
     // Shaders
     const char *vertex_shader_source = read_shader_file("assets/shaders/vertex.glsl");
+    if (vertex_shader_source == NULL) {
+        return -1;
+    }
     const char *fragment_shader_source = read_shader_file("assets/shaders/fragment.glsl"); 
+    if (fragment_shader_source == NULL) {
+        return -1;
+    }
 
     unsigned int vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
     unsigned int fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);

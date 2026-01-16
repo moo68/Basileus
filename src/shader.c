@@ -7,13 +7,13 @@
 #include <glad/gl.h>
 
 
-char *read_shader_file(char* filepath) {
+char *read_shader_file(const char* filepath) {
     char *shader_source = NULL;
     size_t total_length = 0;
 
-    FILE *fp = fopen(filepath, "r");
+    FILE *fp = fopen(filepath, "rb");
     if (fp == NULL) {
-        printf("ERROR! Could not open shader file: %s\n", filepath);
+        fprintf(stderr, "ERROR! Could not open shader file: %s\n", filepath);
         return NULL;
     }
 
@@ -23,7 +23,7 @@ char *read_shader_file(char* filepath) {
 
         char *new_buffer = realloc(shader_source, total_length + line_length + 1);
         if (!new_buffer) {
-            printf("ERROR! Could not reallocate shader file buffer!");
+            fprintf(stderr, "ERROR! Could not reallocate shader file buffer!");
             free(shader_source);
             fclose(fp);
             return NULL;
@@ -51,7 +51,7 @@ unsigned int create_shader(const GLchar *shader_source, GLenum shader_type) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, 512, NULL, info_log);
-        printf("ERROR! Vertex shader compilation failed:\n%s\n", info_log);
+        fprintf(stderr, "ERROR! Vertex shader compilation failed:\n%s\n", info_log); 
     }
 
     return shader;
@@ -70,7 +70,7 @@ unsigned int create_shader_program(unsigned int shader_list[], size_t length) {
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-        printf("ERROR! Shader linking failed:\n%s\n", info_log);
+        fprintf(stderr, "ERROR! Shader linking failed:\n%s\n", info_log); 
     }
 
     return shader_program;
