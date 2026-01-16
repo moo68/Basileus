@@ -57,12 +57,22 @@ unsigned int create_shader(const GLchar *shader_source, GLenum shader_type) {
     return shader;
 }
 
-unsigned int create_shader_program(unsigned int shader_list[], size_t length) {
+unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fragment_source) {
+    const char *vertex_shader_source = read_shader_file(vertex_source);
+    if (vertex_shader_source == NULL) {
+        fprintf(stderr, "ERROR! Failed to read vertex shader!");
+    }
+    const char *fragment_shader_source = read_shader_file(fragment_source); 
+    if (fragment_shader_source == NULL) {
+        fprintf(stderr, "ERROR! Failed to read fragment shader!"); 
+    }
+
+    unsigned int vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
+    unsigned int fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
+
     unsigned int shader_program = glCreateProgram();
- 
-    for (size_t i = 0; i < length; i++) {
-        glAttachShader(shader_program, shader_list[i]);
-    } 
+    glAttachShader(shader_program, vertex_shader);
+    glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
     int success;
@@ -71,8 +81,10 @@ unsigned int create_shader_program(unsigned int shader_list[], size_t length) {
     if (!success) {
         glGetProgramInfoLog(shader_program, 512, NULL, info_log);
         fprintf(stderr, "ERROR! Shader linking failed:\n%s\n", info_log); 
-    }
+    } 
 
+    glDeleteShader(vertex_shader);
+    glDeleteShader(fragment_shader);
     return shader_program;
 }
 

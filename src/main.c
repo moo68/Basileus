@@ -28,27 +28,9 @@ int main(void) {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback); 
 
-    // Shaders
-    const char *vertex_shader_source = read_shader_file("assets/shaders/vertex.glsl");
-    if (vertex_shader_source == NULL) {
-        return -1;
-    }
-    const char *fragment_shader_source = read_shader_file("assets/shaders/fragment.glsl"); 
-    if (fragment_shader_source == NULL) {
-        return -1;
-    }
-
-    unsigned int vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
-    unsigned int fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
-
-    unsigned int shader_list[2];
-    shader_list[0] = vertex_shader;
-    shader_list[1] = fragment_shader;
-
-    unsigned int shader_program = create_shader_program(shader_list, 2);
-
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
+    // Shaders 
+    unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
+            "assets/shaders/fragment.glsl");
 
     // Data 
     float vertices[] = {

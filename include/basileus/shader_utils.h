@@ -8,7 +8,7 @@
 
 char *read_shader_file(const char* filepath);
 unsigned int create_shader(const GLchar *shader_source, GLenum shader_type);
-unsigned int create_shader_program(unsigned int shader_list[], size_t length);
+unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fragment_source);
 
 #endif
 
