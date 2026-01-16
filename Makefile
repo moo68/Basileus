@@ -5,12 +5,14 @@ BIN     := build/$(notdir $(CURDIR))
 
 GLFW    := $(shell pkg-config --libs glfw3)
 OPENGL  := -framework OpenGL
+CGLM    := $(shell pkg-config --libs cglm)
+
 CFLAGS += $(shell pkg-config --cflags glfw3)
-CFLAGS += -I/usr/include/glm
+CFLAGS += $(shell pkg-config --cflags cglm) 
 
 $(BIN): $(SRC)
 	@mkdir -p build
-	$(CC) $(CFLAGS) $^ -o $@ $(GLFW) $(OPENGL)
+	$(CC) $(CFLAGS) $^ -o $@ $(GLFW) $(OPENGL) $(CGLM)
 
 .PHONY: clean
 clean:
