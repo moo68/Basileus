@@ -32,18 +32,67 @@ int main(void) {
     unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
             "assets/shaders/fragment.glsl");
 
-    // Data 
+    // Data--this is currently gross! Will implement a simple cube generator function! 
     float vertices[] = {
-        // Position         // Color          // Texture
-         0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left 
+    // Position          // Color           // Texture
+    // Front face
+     0.5f,  0.5f, 0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top right
+     0.5f, -0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // bottom left
+    -0.5f,  0.5f, 0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f, // top left
+
+    // Back face
+    -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+
+    // Left face
+    -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+
+    // Right face
+     0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+
+    // Top face
+     0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+
+    // Bottom face
+     0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f
     };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
+
+    unsigned int indices[] = {
+    // Front face
+    0, 1, 3,
+    1, 2, 3,
+    // Back face
+    4, 5, 7,
+    5, 6, 7,
+    // Left face
+    8, 9, 11,
+    9,10,11,
+    // Right face
+   12,13,15,
+   13,14,15,
+    // Top face
+   16,17,19,
+   17,18,19,
+    // Bottom face
+   20,21,23,
+   21,22,23
     };
+        
 
     // Buffers
     unsigned int vbo, vao, ebo;
@@ -68,26 +117,30 @@ int main(void) {
 
     // Textures 
     unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+
+    // Projection matrix
+    mat4 projection;
+    glm_mat4_identity(projection);
+    glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
+                0.1f, 100.0f, projection);
    
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
         process_input(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindTexture(GL_TEXTURE_2D, texture);
 
         // Matrix math
-        mat4 model, view, projection;
+        mat4 model, view;
         glm_mat4_identity(model);
-        glm_mat4_identity(view); 
-        glm_mat4_identity(projection);
+        glm_mat4_identity(view);
 
         glm_rotate(model, glm_rad(-55.0f), (vec3){1.0f, 0.0f, 0.0f});
+        glm_rotate(model, glm_rad(glfwGetTime() * 20), (vec3){0.0f, 1.0f, 1.0f});
         glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
-        glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
-                0.1f, 100.0f, projection);
 
         glUseProgram(shader_program);
 
@@ -100,7 +153,7 @@ int main(void) {
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float *)projection);
 
         glBindVertexArray(vao); 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
@@ -148,7 +201,7 @@ GLFWwindow* create_window_and_context(const int width, const int height, const c
         fprintf(stdout, "INFO: Loaded OpenGL version %d.%d\n", GLAD_VERSION_MAJOR(version), 
                 GLAD_VERSION_MINOR(version));
     }
-
+    glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, width, height);
 
     return window;
