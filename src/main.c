@@ -68,7 +68,7 @@ int main(void) {
 
     // Textures 
     unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
-    
+   
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
         process_input(window);
@@ -78,15 +78,26 @@ int main(void) {
 
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        mat4 matrix;
-        glm_mat4_identity(matrix);
-        glm_rotate(matrix, glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
-        glm_scale(matrix, (vec3){0.5f, 0.5f, 0.5f});
+        // Matrix math
+        mat4 model, view, projection;
+        glm_mat4_identity(model);
+        glm_mat4_identity(view); 
+        glm_mat4_identity(projection);
+
+        glm_rotate(model, glm_rad(-55.0f), (vec3){1.0f, 0.0f, 0.0f});
+        glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
+        glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
+                0.1f, 100.0f, projection);
 
         glUseProgram(shader_program);
 
-        unsigned int transformLoc = glGetUniformLocation(shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, (float *)matrix);
+        // Upload matrix math
+        unsigned int modelLoc = glGetUniformLocation(shader_program, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
+        unsigned int viewLoc = glGetUniformLocation(shader_program, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float *)view);
+        unsigned int projectionLoc = glGetUniformLocation(shader_program, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float *)projection);
 
         glBindVertexArray(vao); 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
