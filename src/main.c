@@ -13,10 +13,27 @@
 GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void process_input(GLFWwindow *window);
 
 
 bool is_wireframe = false;
+
+// camera
+vec3 cameraPos   = { 0.0f, 0.0f, 3.0f };
+vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
+vec3 cameraUp    = { 0.0f, 1.0f, 0.0f };
+
+bool firstMouse = true;
+float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch =  0.0f;
+float lastX =  800.0f / 2.0;
+float lastY =  600.0 / 2.0;
+float fov   =  45.0f;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 
 int main(void) { 
@@ -27,6 +44,8 @@ int main(void) {
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback); 
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Shaders 
     unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
@@ -126,6 +145,10 @@ int main(void) {
    
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
+        float currentFrame = (float)(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         process_input(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -139,8 +162,11 @@ int main(void) {
         glm_mat4_identity(view);
 
         glm_rotate(model, glm_rad(-55.0f), (vec3){1.0f, 0.0f, 0.0f});
-        glm_rotate(model, glm_rad(glfwGetTime() * 20), (vec3){0.0f, 1.0f, 1.0f});
-        glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
+        glm_rotate(model, glm_rad(glfwGetTime() * 100), (vec3){0.0f, 1.0f, 1.0f});
+ 
+        vec3 target;
+        glm_vec3_add(cameraPos, cameraFront, target);
+        glm_lookat(cameraPos, target, cameraUp, view); 
 
         glUseProgram(shader_program);
 
@@ -209,6 +235,7 @@ GLFWwindow* create_window_and_context(const int width, const int height, const c
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     (void)window;
+
     glViewport(0, 0, width, height);
 }
 
@@ -229,7 +256,70 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    (void)window;
+
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f; // change this value to your liking
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (pitch > 89.0f) {
+        pitch = 89.0f;
+    }
+    if (pitch < -89.0f) {
+        pitch = -89.0f;
+    }
+
+    vec3 front;
+    front[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
+    front[1] = sin(glm_rad(pitch));
+    front[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
+    glm_vec3_norm(front);
+    glm_vec3_copy(front, cameraFront);
+}
+
 void process_input(GLFWwindow *window) {
     (void)window;
+
+    const float cameraSpeed = 2.5f * deltaTime;
+    vec3 velocity;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        glm_vec3_scale(cameraFront, cameraSpeed, velocity);
+        glm_vec3_add(cameraPos, velocity, cameraPos);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        glm_vec3_scale(cameraFront, cameraSpeed, velocity);
+        glm_vec3_sub(cameraPos, velocity, cameraPos);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        vec3 left;
+        glm_vec3_cross(cameraFront, cameraUp, left);
+        glm_vec3_norm(left);
+        glm_vec3_scale(left, cameraSpeed, velocity);
+        glm_vec3_sub(cameraPos, velocity, cameraPos);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        vec3 right;
+        glm_vec3_cross(cameraFront, cameraUp, right);
+        glm_vec3_norm(right);
+        glm_vec3_scale(right, cameraSpeed, velocity);
+        glm_vec3_add(cameraPos, velocity, cameraPos);
+    }
 }
 
