@@ -67,7 +67,7 @@ int main(void) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Textures 
-    unsigned int texture = load_texture("assets/textures/bricks.jpg");
+    unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
     
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
@@ -78,7 +78,15 @@ int main(void) {
 
         glBindTexture(GL_TEXTURE_2D, texture);
 
+        mat4 matrix;
+        glm_mat4_identity(matrix);
+        glm_rotate(matrix, glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
+        glm_scale(matrix, (vec3){0.5f, 0.5f, 0.5f});
+
         glUseProgram(shader_program);
+
+        unsigned int transformLoc = glGetUniformLocation(shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, (float *)matrix);
 
         glBindVertexArray(vao); 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
