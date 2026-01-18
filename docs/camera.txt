@@ -32,12 +32,12 @@ movement speed!
 A camera can be created with the create_camera() function:
 
     Camera create_camera(float x, float y, float z, float fov, 
-        float sensitivity)
+        float sensitivity);
 
 
 A camera can be moved by using one of its move functions:
 
-    void move_camera_[direction](Camera *c, float distance)
+    void move_camera_[direction](Camera *c, float distance);
 
 The [direction] in the function name can be replaced with forward, backward,
 left, or right. 
@@ -47,4 +47,23 @@ should be moving each time the position gets updated. While internally, within
 the camera code, we use the term "distance", outside of camera code, we use the
 term "speed." Thus, expect to pass a speed value into the distance parameter; 
 that is what will affect how fast the camera moves.
+
+
+Looking around with the camera is done via the look_camera_around() function:
+
+    void look_camera_around(Camera *c, float x_pos, float y_pos, float *last_x, 
+        float *last_y, bool *first_mouse);
+
+The parameters x_pos and y_pos represent the current mouse position. These
+values should be obtained with something like a GLFW callback function.
+The parameters last_x and last_y are the mouse's previous coordinates.
+
+first_mouse is simply whether or not the mouse has first moved yet. It should
+always be set to true.
+
+The reason why last_x, last_y, and first_mouse are pointers is because they are
+outside of the camera's state, but still a state that needs to be tracked and
+constantly updated. Another solution would be to just have those values be part 
+of the camera struct; since those values relate to the mouse's state and not the 
+camera, though, they're not tracked as part of the camera.
 

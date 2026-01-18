@@ -26,4 +26,7 @@ void move_camera_left(Camera *c, float distance);
 
 void move_camera_right(Camera *c, float distance);
 
+void look_camera_around(Camera *c, float x_pos, float y_pos, float *last_x, 
+        float *last_y, bool *first_mouse);
+
 #endif

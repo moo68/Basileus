@@ -63,3 +63,38 @@ void move_camera_right(Camera *c, float distance) {
     glm_vec3_add(c->position, displacement, c->position);
 }
 
+void look_camera_around(Camera *c, float x_pos, float y_pos, float *last_x, 
+        float *last_y, bool *first_mouse) {
+    if (*first_mouse) {
+        *last_x = x_pos;
+        *last_y = y_pos;
+        *first_mouse = false;
+    }
+
+    float x_offset = x_pos - *last_x;
+    float y_offset = *last_y - y_pos; // Reversed since y-coordinates go from bottom to top
+    *last_x = x_pos;
+    *last_y = y_pos;
+
+    x_offset *= c->sensitivity;
+    y_offset *= c->sensitivity;
+
+    c->yaw += x_offset;
+    c->pitch += y_offset;
+
+    if (c->pitch > 89.0f) {
+        c->pitch = 89.0f;
+    }
+    if (c->pitch < -89.0f) {
+        c->pitch = -89.0f;
+    }
+
+    vec3 front;
+    front[0] = cos(glm_rad(c->yaw)) * cos(glm_rad(c->pitch));
+    front[1] = sin(glm_rad(c->pitch));
+    front[2] = sin(glm_rad(c->yaw)) * cos(glm_rad(c->pitch));
+ 
+    glm_vec3_norm(front);
+    glm_vec3_copy(front, c->front);
+}
+
