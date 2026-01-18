@@ -1,0 +1,50 @@
+
+A camera represents a kind of 1st person "viewport." It has these attributes:
+
+    vec3 position;
+    vec3 front;
+    vec3 up;
+
+    float pitch;
+    float yaw; 
+    float fov;
+    float sensitivity;
+
+A camera's position vector literally represents its current position in world 
+space.
+
+The front and up vectors are the vectors that point directly in front of and up
+above the camera relative to the camera's current position and/or orientation.
+The front and up vectors should never be directly modified themselves! The front
+and up vectors change as a result of other variables, such as pitch and yaw.
+
+Pitch and yaw determine where the camera is looking. Note that there is no 
+roll--this is intentional, as roll does not normally get used by simple 1st 
+person cameras. This camera isn't meant for a flight sim!
+
+The FOV variable is literally just the camera's field of view in degrees.
+
+Sensitivity is literally just how sensitive the camera is to mouse input for
+the purposes of looking around. Note that this does not have anything to do with
+movement speed!
+
+
+A camera can be created with the create_camera() function:
+
+    Camera create_camera(float x, float y, float z, float fov, 
+        float sensitivity)
+
+
+A camera can be moved by using one of its move functions:
+
+    void move_camera_[direction](Camera *c, float distance)
+
+The [direction] in the function name can be replaced with forward, backward,
+left, or right. 
+
+Note that the parameter "distance" here refers to the distance that the camera
+should be moving each time the position gets updated. While internally, within
+the camera code, we use the term "distance", outside of camera code, we use the
+term "speed." Thus, expect to pass a speed value into the distance parameter; 
+that is what will affect how fast the camera moves.
+
