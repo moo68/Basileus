@@ -6,6 +6,7 @@
 #include <cglm/cglm.h>
 #include <stb_image.h>
 
+#include "basileus/camera.h"
 #include "basileus/shader_utils.h"
 #include "basileus/texture_utils.h"
 
@@ -20,16 +21,14 @@ void process_input(GLFWwindow *window);
 bool is_wireframe = false;
 
 // camera
-vec3 cameraPos   = { 0.0f, 0.0f, 3.0f };
-vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
-vec3 cameraUp    = { 0.0f, 1.0f, 0.0f };
-
 bool firstMouse = true;
 float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
 float pitch =  0.0f;
 float lastX =  800.0f / 2.0;
 float lastY =  600.0 / 2.0;
 float fov   =  45.0f;
+
+Camera camera;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -110,8 +109,7 @@ int main(void) {
     // Bottom face
    20,21,23,
    21,22,23
-    };
-        
+    };        
 
     // Buffers
     unsigned int vbo, vao, ebo;
@@ -136,6 +134,9 @@ int main(void) {
 
     // Textures 
     unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+
+    // Camera
+    camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
 
     // Projection matrix
     mat4 projection;
@@ -165,8 +166,8 @@ int main(void) {
         glm_rotate(model, glm_rad(glfwGetTime() * 100), (vec3){0.0f, 1.0f, 1.0f});
  
         vec3 target;
-        glm_vec3_add(cameraPos, cameraFront, target);
-        glm_lookat(cameraPos, target, cameraUp, view); 
+        glm_vec3_add(camera.position, camera.front, target);
+        glm_lookat(camera.position, target, camera.up, view); 
 
         glUseProgram(shader_program);
 
@@ -290,36 +291,25 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     front[1] = sin(glm_rad(pitch));
     front[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
     glm_vec3_norm(front);
-    glm_vec3_copy(front, cameraFront);
+    glm_vec3_copy(front, camera.front);
 }
 
 void process_input(GLFWwindow *window) {
     (void)window;
 
-    const float cameraSpeed = 2.5f * deltaTime;
-    vec3 velocity;
+    const float speed = 2.5f * deltaTime; 
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        glm_vec3_scale(cameraFront, cameraSpeed, velocity);
-        glm_vec3_add(cameraPos, velocity, cameraPos);
+        move_camera_forward(&camera, speed);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        glm_vec3_scale(cameraFront, cameraSpeed, velocity);
-        glm_vec3_sub(cameraPos, velocity, cameraPos);
+        move_camera_backward(&camera, speed);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        vec3 left;
-        glm_vec3_cross(cameraFront, cameraUp, left);
-        glm_vec3_norm(left);
-        glm_vec3_scale(left, cameraSpeed, velocity);
-        glm_vec3_sub(cameraPos, velocity, cameraPos);
+        move_camera_left(&camera, speed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        vec3 right;
-        glm_vec3_cross(cameraFront, cameraUp, right);
-        glm_vec3_norm(right);
-        glm_vec3_scale(right, cameraSpeed, velocity);
-        glm_vec3_add(cameraPos, velocity, cameraPos);
+        move_camera_right(&camera, speed);
     }
 }
 
