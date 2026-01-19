@@ -172,7 +172,10 @@ GLFWwindow* create_window_and_context(const int width, const int height, const c
     }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glViewport(0, 0, width, height);
+    
+    int fb_width, fb_height;
+    glfwGetFramebufferSize(window, &fb_width, &fb_height); 
+    glViewport(0, 0, fb_width, fb_height);
 
     return window;
 }
