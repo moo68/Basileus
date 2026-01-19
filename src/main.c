@@ -50,6 +50,14 @@ int main(void) {
     // Data    
     Cube cube = generate_cube();
 
+    float cube_positions[] = {
+        0.0f, 0.0f, 0.0f,
+        2.0f, 2.0f, 2.0f,
+        1.0f, 1.0f, -5.0f,
+        -2.0f, 1.0f, -3.0f,
+        -1.0f, 5.0f, -8.0f
+    };
+
     // Buffers
     unsigned int vbo, vao, ebo;
     glGenVertexArrays(1, &vao);
@@ -96,32 +104,37 @@ int main(void) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glUseProgram(shader_program);
+        glBindVertexArray(vao);
+
         //glBindTexture(GL_TEXTURE_2D, texture);
 
         // Matrix math
-        mat4 model, view;
-        glm_mat4_identity(model);
+        mat4 view, model;
         glm_mat4_identity(view);
-
-        glm_rotate(model, glm_rad(-55.0f), (vec3){1.0f, 0.0f, 0.0f});
-        glm_rotate(model, glm_rad(glfwGetTime() * 100), (vec3){0.0f, 1.0f, 1.0f});
- 
         vec3 target;
         glm_vec3_add(camera.position, camera.front, target);
         glm_lookat(camera.position, target, camera.up, view); 
 
-        glUseProgram(shader_program);
-
-        // Upload matrix math
-        unsigned int modelLoc = glGetUniformLocation(shader_program, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
+        // Upload matrix math 
         unsigned int viewLoc = glGetUniformLocation(shader_program, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float *)view);
         unsigned int projectionLoc = glGetUniformLocation(shader_program, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float *)projection);
+ 
+        for (int i = 0; i < 15; i += 3) { 
+            glm_mat4_identity(model); 
+            glm_translate(model, (vec3){cube_positions[i], cube_positions[i + 1],
+                    cube_positions[i + 2]});  
+            glm_rotate(model, glm_rad(i * 20.0f), (vec3){1.0f, 0.0f, 0.0f});
+            glm_rotate(model, glm_rad(glfwGetTime() * 100), (vec3){0.0f, 1.0f, 1.0f});
 
-        glBindVertexArray(vao); 
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            unsigned int modelLoc = glGetUniformLocation(shader_program, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model); 
+            
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        } 
+  
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
