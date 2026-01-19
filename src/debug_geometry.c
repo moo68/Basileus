@@ -1,0 +1,62 @@
+#include "basileus/debug_geometry.h"
+
+
+Cube generate_cube() {
+    Cube c = {
+        .vertices = {
+            // Front face
+            0.5f,  0.5f, 0.5f, 
+            0.5f, -0.5f, 0.5f, 
+           -0.5f, -0.5f, 0.5f, 
+           -0.5f,  0.5f, 0.5f, 
+            // Back face
+           -0.5f,  0.5f, -0.5f, 
+           -0.5f, -0.5f, -0.5f, 
+            0.5f, -0.5f, -0.5f, 
+            0.5f,  0.5f, -0.5f, 
+            // Left face
+           -0.5f,  0.5f,  0.5f, 
+           -0.5f, -0.5f,  0.5f, 
+           -0.5f, -0.5f, -0.5f, 
+           -0.5f,  0.5f, -0.5f, 
+            // Right face
+            0.5f,  0.5f, -0.5f, 
+            0.5f, -0.5f, -0.5f, 
+            0.5f, -0.5f,  0.5f, 
+            0.5f,  0.5f,  0.5f, 
+            // Top face
+            0.5f,  0.5f, -0.5f, 
+            0.5f,  0.5f,  0.5f, 
+           -0.5f,  0.5f,  0.5f,
+           -0.5f,  0.5f, -0.5f,
+            // Bottom face
+            0.5f, -0.5f,  0.5f, 
+            0.5f, -0.5f, -0.5f, 
+           -0.5f, -0.5f, -0.5f, 
+           -0.5f, -0.5f,  0.5f
+        },
+        .indices = {
+            // Front face
+            2, 1, 0,
+            0, 3, 2,
+            // Back face
+            6, 5, 4,
+            4, 7, 6,
+            // Left face
+            10, 9, 8,
+            8, 11, 10,
+            // Right face
+            14, 13, 12,
+            12, 15, 14,
+            // Top face
+            18, 17, 16,
+            16, 19, 18,
+            // Bottom face
+            22, 21, 20,
+            20, 23, 22
+        }
+    };
+
+    return c;
+}
+

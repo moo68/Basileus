@@ -9,6 +9,7 @@
 #include "basileus/camera.h"
 #include "basileus/shader_utils.h"
 #include "basileus/texture_utils.h"
+#include "basileus/debug_geometry.h"
 
 
 GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
@@ -25,8 +26,8 @@ bool first_mouse = true;
 float last_x =  1280.0f / 2.0;
 float last_y =  720.0 / 2.0;
 
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+float delta_time = 0.0f;
+float last_frame = 0.0f;
 
 
 int main(void) { 
@@ -41,69 +42,13 @@ int main(void) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Shaders 
-    unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
-            "assets/shaders/fragment.glsl");
+    /*unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
+            "assets/shaders/fragment.glsl");*/
+    unsigned int shader_program = create_shader_program("assets/shaders/debug_vertex.glsl",
+            "assets/shaders/debug_fragment.glsl");
 
-    // Data--this is currently gross! Will implement a simple cube generator function! 
-    float vertices[] = {
-    // Position          // Color           // Texture
-    // Front face
-     0.5f,  0.5f, 0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top right
-     0.5f, -0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // bottom left
-    -0.5f,  0.5f, 0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f, // top left
-
-    // Back face
-    -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-
-    // Left face
-    -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-
-    // Right face
-     0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-
-    // Top face
-     0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-
-    // Bottom face
-     0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f
-    };
-
-    unsigned int indices[] = {
-    // Front face
-    0, 1, 3,
-    1, 2, 3,
-    // Back face
-    4, 5, 7,
-    5, 6, 7,
-    // Left face
-    8, 9, 11,
-    9,10,11,
-    // Right face
-   12,13,15,
-   13,14,15,
-    // Top face
-   16,17,19,
-   17,18,19,
-    // Bottom face
-   20,21,23,
-   21,22,23
-    };        
+    // Data    
+    Cube cube = generate_cube();
 
     // Buffers
     unsigned int vbo, vao, ebo;
@@ -113,21 +58,23 @@ int main(void) {
     
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube.vertices), cube.vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube.indices), cube.indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    /*glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(2);*/
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Textures 
-    unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+    //unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
 
     // Camera
     camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
@@ -140,16 +87,16 @@ int main(void) {
    
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = (float)(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        float current_frame = (float)(glfwGetTime());
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
 
         process_input(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
+        //glBindTexture(GL_TEXTURE_2D, texture);
 
         // Matrix math
         mat4 model, view;
@@ -192,6 +139,7 @@ int main(void) {
 }
 
 
+// Function definitions
 GLFWwindow* create_window_and_context(const int width, const int height, const char *name) {
     if (!glfwInit()) {
         printf("ERROR: GLFW failed to initialize!\n");
@@ -223,6 +171,7 @@ GLFWwindow* create_window_and_context(const int width, const int height, const c
                 GLAD_VERSION_MINOR(version));
     }
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     glViewport(0, 0, width, height);
 
     return window;
@@ -260,7 +209,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 void process_input(GLFWwindow *window) {
     (void)window;
 
-    const float speed = 2.5f * deltaTime; 
+    const float speed = 2.5f * delta_time; 
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         move_camera_forward(&camera, speed);

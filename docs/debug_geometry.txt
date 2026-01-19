@@ -1,0 +1,5 @@
+
+Debug geometry allows for simple shape creation. It isn't meant to act as a
+general-purpose mesh tool; rather, it generates simple meshes meant to be used
+purely for testing purposes.
+
