@@ -46,17 +46,11 @@ int main(void) {
             "assets/shaders/fragment.glsl");*/
     unsigned int shader_program = create_shader_program("assets/shaders/debug_vertex.glsl",
             "assets/shaders/debug_fragment.glsl");
+    unsigned int light_source_shader = create_shader_program("assets/shaders/lighting_vertex.glsl",
+            "assets/shaders/lighting_fragment.glsl");
 
     // Data    
-    Cube cube = generate_cube();
-
-    float cube_positions[] = {
-        0.0f, 0.0f, 0.0f,
-        2.0f, 2.0f, 2.0f,
-        1.0f, 1.0f, -5.0f,
-        -2.0f, 1.0f, -3.0f,
-        -1.0f, 5.0f, -8.0f
-    };
+    Cube cube = generate_cube(); 
 
     // Buffers
     unsigned int vbo, vao, ebo;
@@ -78,8 +72,15 @@ int main(void) {
     glEnableVertexAttribArray(2);*/
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    unsigned int light_vao;
+    glGenVertexArrays(1, &light_vao);
+    glBindVertexArray(light_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     // Textures 
     //unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
@@ -107,34 +108,53 @@ int main(void) {
         glUseProgram(shader_program);
         glBindVertexArray(vao);
 
-        //glBindTexture(GL_TEXTURE_2D, texture);
+        vec3 color, light;
+        glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
+        glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light);
+        unsigned int color_loc = glGetUniformLocation(shader_program, "object_color");
+        glUniform3fv(color_loc, 1, (float *)color);
+        unsigned int light_loc = glGetUniformLocation(shader_program, "light_color");
+        glUniform3fv(light_loc, 1, (float *)light);
 
         // Matrix math
-        mat4 view, model;
+        mat4 view;
         glm_mat4_identity(view);
         vec3 target;
         glm_vec3_add(camera.position, camera.front, target);
         glm_lookat(camera.position, target, camera.up, view); 
-
-        // Upload matrix math 
-        unsigned int viewLoc = glGetUniformLocation(shader_program, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float *)view);
-        unsigned int projectionLoc = glGetUniformLocation(shader_program, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float *)projection);
  
-        for (int i = 0; i < 15; i += 3) { 
-            glm_mat4_identity(model); 
-            glm_translate(model, (vec3){cube_positions[i], cube_positions[i + 1],
-                    cube_positions[i + 2]});  
-            glm_rotate(model, glm_rad(i * 20.0f), (vec3){1.0f, 0.0f, 0.0f});
-            glm_rotate(model, glm_rad(glfwGetTime() * 100), (vec3){0.0f, 1.0f, 1.0f});
+        unsigned int view_loc = glGetUniformLocation(shader_program, "view");
+        glUniformMatrix4fv(view_loc, 1, GL_FALSE, (float *)view);
+        unsigned int projection_loc = glGetUniformLocation(shader_program, "projection");
+        glUniformMatrix4fv(projection_loc, 1, GL_FALSE, (float *)projection);
 
-            unsigned int modelLoc = glGetUniformLocation(shader_program, "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model); 
+        mat4 model;
+        glm_mat4_identity(model);
+        glm_translate(model, (vec3){-1.0f, 0.0f, 0.0f});
+        unsigned int model_loc = glGetUniformLocation(shader_program, "model");
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model);
             
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        } 
-  
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
+
+        glUseProgram(light_source_shader); 
+        glBindVertexArray(vao);
+ 
+        glm_mat4_identity(view);
+        glm_vec3_add(camera.position, camera.front, target);
+        glm_lookat(camera.position, target, camera.up, view); 
+ 
+        unsigned int light_view_loc = glGetUniformLocation(light_source_shader, "view");
+        glUniformMatrix4fv(light_view_loc, 1, GL_FALSE, (float *)view);
+        unsigned int light_projection_loc = glGetUniformLocation(light_source_shader, "projection");
+        glUniformMatrix4fv(light_projection_loc, 1, GL_FALSE, (float *)projection);
+ 
+        glm_mat4_identity(model);
+        glm_translate(model, (vec3){3.0f, 0.0f, -3.0f});
+        unsigned int light_model_loc = glGetUniformLocation(light_source_shader, "model");
+        glUniformMatrix4fv(light_model_loc, 1, GL_FALSE, (float *)model);
+
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
+
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
@@ -143,6 +163,7 @@ int main(void) {
 
     // Shutdown cleanup
     glDeleteVertexArrays(1, &vao);
+    glDeleteVertexArrays(1, &light_vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
     glDeleteProgram(shader_program);
