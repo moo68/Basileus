@@ -6,6 +6,7 @@
 #include <cglm/cglm.h>
 #include <stb_image.h>
 
+#include "basileus/mesh.h"
 #include "basileus/camera.h"
 #include "basileus/shader_utils.h"
 #include "basileus/texture_utils.h"
@@ -50,37 +51,16 @@ int main(void) {
             "assets/shaders/lighting_fragment.glsl");
 
     // Data    
-    Cube cube = generate_cube(); 
+    Cube cube = generate_cube(); // TODO: Debug geometry should probably make
+                                 // meshes, not its own type with redundant data
+    Mesh cube_mesh = create_mesh(cube.vertices, 72, cube.indices, 36);
 
     // Buffers
-    unsigned int vbo, vao, ebo;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-    
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube.vertices), cube.vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube.indices), cube.indices, GL_STATIC_DRAW);
+    VertexAttribute position = create_vertex_attribute(0, 3);
+    VertexAttribute pos_attributes[] = {position};
+    VertexLayout vertex_pos_layout = create_vertex_layout(pos_attributes, 1); 
 
-    /*glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);*/
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    unsigned int light_vao;
-    glGenVertexArrays(1, &light_vao);
-    glBindVertexArray(light_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    upload_mesh(&cube_mesh, &vertex_pos_layout); 
 
     // Textures 
     //unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
@@ -106,7 +86,7 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shader_program);
-        glBindVertexArray(vao);
+        glBindVertexArray(cube_mesh.vao);
 
         vec3 color, light;
         glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
@@ -137,7 +117,7 @@ int main(void) {
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
 
         glUseProgram(light_source_shader); 
-        glBindVertexArray(vao);
+        glBindVertexArray(cube_mesh.vao);
  
         glm_mat4_identity(view);
         glm_vec3_add(camera.position, camera.front, target);
@@ -162,10 +142,10 @@ int main(void) {
     }
 
     // Shutdown cleanup
-    glDeleteVertexArrays(1, &vao);
-    glDeleteVertexArrays(1, &light_vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ebo);
+    //glDeleteVertexArrays(1, &vao);
+    //glDeleteVertexArrays(1, &light_vao);
+    //glDeleteBuffers(1, &vbo);
+    //glDeleteBuffers(1, &ebo);
     glDeleteProgram(shader_program);
         
     glfwTerminate();

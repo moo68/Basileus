@@ -1,0 +1,79 @@
+
+A mesh is a collection of vertices, indices, and their associated OpenGL 
+buffers/attribute array. A mesh has the following attributes:
+
+    float *vertices;
+    size_t vertices_length;
+
+    unsigned int *indices;
+    size_t indices_length;
+
+    unsigned int vbo, ebo, vao;
+
+The pointers to vertices and indices point to the first byte of vertex and 
+index data in memory, respectively. The size_t length variables are how many
+vertices/indices the mesh has. This means that vertex_length represents the
+number of vertices in the mesh, *not* the number of floats in the list of
+vertices!
+
+The unsigned ints vbo, ebo, and vao are the vertex buffer, element buffer,
+and vertex array objects. Vertex and index data will be uploaded and used
+to create values for these attributes via OpenGL functions.
+
+
+For a mesh to be properly rendered, it requires a vertex layout that 
+corresponds to the how the vertices in the vertex buffer are laid out. There
+two structs used to create a vertex layout. The first is a VertexAttribute,
+which contains the following member variables:
+
+    unsigned int location;
+    unsigned int size; 
+
+Location is the value used in shaders to parse which atributes are which. Any
+attribute should be given its own unique location number; this number will
+always stay constant and will always correspond to that attribute. The size
+value is simply how many floats big the attribute is.
+
+Then there's the actual VertexLayout struct itself which contains:
+
+    VertexAttribute *attributes;
+    size_t attribute_count;
+
+The attributes pointer is simply an array of attributes, and, as expected,
+attribute_count is the number of attributes in that array.
+
+
+There are multiple functions to work with meshes and their vertex metadata. For
+starters:
+
+    Mesh create_mesh(float *vert, size_t vert_length, unsigned int *ind, 
+        size_t ind_length);
+
+This creates a new mesh struct by directly passing in the vertex and index
+data. This on its own does not create any kind of mesh data--it
+simply takes in mesh data as its arguments to prepare it for rendering.
+
+Only adding a mesh's vertex and index data to its struct is not enough, 
+however. It must then be uploaded to the GPU:
+
+    void upload_mesh(Mesh *m, VertexLayout *layout);
+
+The upload_mesh() function takes in a mesh pointer and a vertex layout pointer
+and uploads all the necessary data to the GPU. Note that it is not the
+responsibility of this function to know the required vertex layout; that's on
+the programmer!
+
+
+Finally, there are functions for actually creating a vertex attribute:
+
+    VertexAttribute create_vertex_attribute(unsigned int location, 
+        unsigned int size);
+
+And to create a vertex attribute:
+
+    VertexLayout create_vertex_layout(VertexAttribute *attributes, 
+        size_t attribute_count);
+
+What these functions do and what their arguments mean should be 
+self-explanitory based on the above descriptions.
+
