@@ -36,5 +36,7 @@ VertexAttribute create_vertex_attribute(unsigned int location,
 VertexLayout create_vertex_layout(VertexAttribute *attributes, 
         size_t attribute_count);
 
+void cleanup_mesh(Mesh *m);
+
 #endif
 

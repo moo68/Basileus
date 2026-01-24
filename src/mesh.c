@@ -71,3 +71,9 @@ VertexLayout create_vertex_layout(VertexAttribute *attributes,
     return vl;
 }
 
+void cleanup_mesh(Mesh *m) {
+    glDeleteVertexArrays(1, &m->vao);
+    glDeleteBuffers(1, &m->vbo);
+    glDeleteBuffers(1, &m->ebo);
+}
+

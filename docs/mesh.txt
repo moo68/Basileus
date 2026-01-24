@@ -77,3 +77,12 @@ And to create a vertex attribute:
 What these functions do and what their arguments mean should be 
 self-explanitory based on the above descriptions.
 
+
+For best practice, once the render loop has been exited but before the program 
+shuts down, a mesh's buffers and vertex array should be cleaned up. This is 
+done via:
+
+    void cleanup_mesh(Mesh *m);
+
+Which simply deletes the given mesh's vbo, ebo, and vao.
+

@@ -134,11 +134,9 @@ int main(void) {
     }
 
     // Shutdown cleanup
-    //glDeleteVertexArrays(1, &vao);
-    //glDeleteVertexArrays(1, &light_vao);
-    //glDeleteBuffers(1, &vbo);
-    //glDeleteBuffers(1, &ebo);
+    cleanup_mesh(&cube_mesh);
     glDeleteProgram(shader_program);
+    glDeleteProgram(light_source_shader);
         
     glfwTerminate();
     return 0;
