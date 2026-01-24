@@ -67,3 +67,14 @@ constantly updated. Another solution would be to just have those values be part
 of the camera struct; since those values relate to the mouse's state and not the 
 camera, though, they're not tracked as part of the camera.
 
+
+The whole purpose of the camera, from the renderer's point of view, is to
+update the view matrix. This is done with this function:
+
+    void set_view_matrix(Camera *c, mat4 *view);
+
+This set_view_matrix() function should be called once every single frame. By 
+doing so, all of the keyboard and mouse input will actually affect what can be
+seen on screen. Without this function be called once per frame, the camera is
+useless and nothing will render!
+

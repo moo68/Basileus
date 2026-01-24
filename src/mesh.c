@@ -5,13 +5,13 @@
 #include <glad/gl.h>
 
 
-Mesh create_mesh(float *vert, size_t vert_length, unsigned int *ind, 
-        size_t ind_length) {
+Mesh create_mesh(float *vert, size_t vert_count, unsigned int *ind, 
+        size_t ind_count) {
     Mesh m;
     m.vertices = vert;
-    m.vertices_length = vert_length;
+    m.vertex_count = vert_count;
     m.indices = ind;
-    m.indices_length = ind_length;
+    m.index_count = ind_count;
 
     m.vbo = 0;
     m.ebo = 0;
@@ -27,10 +27,10 @@ void upload_mesh(Mesh *m, VertexLayout *layout) {
     
     glBindVertexArray(m->vao);
     glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(m->vertices[0]) * m->vertices_length, 
+    glBufferData(GL_ARRAY_BUFFER, sizeof(m->vertices[0]) * m->vertex_count, 
             m->vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m->indices[0]) * m->indices_length, 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m->indices[0]) * m->index_count, 
             m->indices, GL_STATIC_DRAW);
 
     unsigned int vertex_length = 0;

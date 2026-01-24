@@ -6,10 +6,10 @@
 
 typedef struct {
     float *vertices;
-    size_t vertices_length;
+    size_t vertex_count;
 
     unsigned int *indices;
-    size_t indices_length;
+    size_t index_count;
 
     unsigned int vbo, ebo, vao; 
 } Mesh;
@@ -25,8 +25,8 @@ typedef struct {
 } VertexLayout;
 
 
-Mesh create_mesh(float *vert, size_t vert_length, unsigned int *ind, 
-        size_t ind_length);
+Mesh create_mesh(float *vert, size_t vert_count, unsigned int *ind, 
+        size_t ind_count);
 
 void upload_mesh(Mesh *m, VertexLayout *layout);
 

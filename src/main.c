@@ -52,7 +52,7 @@ int main(void) {
 
     // Data    
     Cube cube = generate_cube(); // TODO: Debug geometry should probably make
-                                 // meshes, not its own type with redundant data
+                                 // meshes, not its own type with redundant data?
     Mesh cube_mesh = create_mesh(cube.vertices, 72, cube.indices, 36);
 
     // Buffers
@@ -68,12 +68,25 @@ int main(void) {
     // Camera
     camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
 
-    // Projection matrix
-    mat4 projection;
+    mat4 projection, view, model;
+
     glm_mat4_identity(projection);
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
                 0.1f, 100.0f, projection);
    
+    unsigned int color_loc = glGetUniformLocation(shader_program, "object_color");
+    unsigned int light_loc = glGetUniformLocation(shader_program, "light_color");
+    unsigned int view_loc = glGetUniformLocation(shader_program, "view");
+    unsigned int projection_loc = glGetUniformLocation(shader_program, "projection");
+    unsigned int model_loc = glGetUniformLocation(shader_program, "model");
+    unsigned int light_view_loc = glGetUniformLocation(light_source_shader, "view");
+    unsigned int light_projection_loc = glGetUniformLocation(light_source_shader, "projection");
+    unsigned int light_model_loc = glGetUniformLocation(light_source_shader, "model");
+
+    vec3 color, light;
+    glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
+    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light); 
+    
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
         float current_frame = (float)(glfwGetTime());
@@ -85,52 +98,31 @@ int main(void) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(shader_program);
-        glBindVertexArray(cube_mesh.vao);
+        set_view_matrix(&camera, &view);
 
-        vec3 color, light;
-        glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
-        glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light);
-        unsigned int color_loc = glGetUniformLocation(shader_program, "object_color");
+        glBindVertexArray(cube_mesh.vao);
+        glUseProgram(shader_program);
+
         glUniform3fv(color_loc, 1, (float *)color);
-        unsigned int light_loc = glGetUniformLocation(shader_program, "light_color");
         glUniform3fv(light_loc, 1, (float *)light);
 
-        // Matrix math
-        mat4 view;
-        glm_mat4_identity(view);
-        vec3 target;
-        glm_vec3_add(camera.position, camera.front, target);
-        glm_lookat(camera.position, target, camera.up, view); 
- 
-        unsigned int view_loc = glGetUniformLocation(shader_program, "view");
         glUniformMatrix4fv(view_loc, 1, GL_FALSE, (float *)view);
-        unsigned int projection_loc = glGetUniformLocation(shader_program, "projection");
         glUniformMatrix4fv(projection_loc, 1, GL_FALSE, (float *)projection);
 
-        mat4 model;
         glm_mat4_identity(model);
         glm_translate(model, (vec3){-1.0f, 0.0f, 0.0f});
-        unsigned int model_loc = glGetUniformLocation(shader_program, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model);
             
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
 
-        glUseProgram(light_source_shader); 
         glBindVertexArray(cube_mesh.vao);
- 
-        glm_mat4_identity(view);
-        glm_vec3_add(camera.position, camera.front, target);
-        glm_lookat(camera.position, target, camera.up, view); 
- 
-        unsigned int light_view_loc = glGetUniformLocation(light_source_shader, "view");
+        glUseProgram(light_source_shader);
+  
         glUniformMatrix4fv(light_view_loc, 1, GL_FALSE, (float *)view);
-        unsigned int light_projection_loc = glGetUniformLocation(light_source_shader, "projection");
         glUniformMatrix4fv(light_projection_loc, 1, GL_FALSE, (float *)projection);
  
         glm_mat4_identity(model);
         glm_translate(model, (vec3){3.0f, 0.0f, -3.0f});
-        unsigned int light_model_loc = glGetUniformLocation(light_source_shader, "model");
         glUniformMatrix4fv(light_model_loc, 1, GL_FALSE, (float *)model);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
