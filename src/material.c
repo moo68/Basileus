@@ -17,9 +17,3 @@ Material create_material(GLuint shader_program) {
     return mat;
 }
 
-/*void get_uniform_locations(Material *mat) {
-    mat->model_loc = glGetUniformLocation(mat->shader_program, "model");
-    mat->view_loc = glGetUniformLocation(mat->shader_program, "view");
-    mat->projection_loc = glGetUniformLocation(mat->shader_program, "projection");
-}*/
-
