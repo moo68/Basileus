@@ -103,6 +103,7 @@ int main(void) {
         glUniform3fv(object.color_loc, 1, (float *)color);
         glUniform3fv(object.light_loc, 1, (float *)light);
         glUniform3fv(object.light_pos_loc, 1, (float *)light_pos);
+        glUniform3fv(object.view_pos_loc, 1, (float *)camera.position);
 
         glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)view);
         glUniformMatrix4fv(object.projection_loc, 1, GL_FALSE, (float *)projection);
@@ -119,9 +120,10 @@ int main(void) {
         glUniformMatrix4fv(light_source.view_loc, 1, GL_FALSE, (float *)view);
         glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);
  
-        glm_mat4_identity(model);
-        glm_vec3_rotate(light_pos, delta_time, (vec3){0.0f, 1.0f, 1.0f});
-        glm_translate(model, light_pos);
+        glm_mat4_identity(model); 
+        glm_vec3_rotate(light_pos, delta_time * 0.5f, (vec3){0.0f, 1.0f, 1.0f});
+        glm_translate(model, light_pos); 
+        glm_scale(model, (vec3){0.25f, 0.25f, 0.25f});
         glUniformMatrix4fv(light_source.model_loc, 1, GL_FALSE, (float *)model);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
