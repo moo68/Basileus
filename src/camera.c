@@ -24,6 +24,8 @@ Camera create_camera(float x, float y, float z, float fov, float sensitivity) {
     c.fov = fov;
     c.sensitivity = sensitivity;
 
+    glm_mat4_identity(c.view);
+
     return c;
 }
 
@@ -98,11 +100,11 @@ void look_camera_around(Camera *c, float x_pos, float y_pos, float *last_x,
     glm_vec3_copy(front, c->front);
 }
 
-void set_view_matrix(Camera *c, mat4 *view) { 
-    glm_mat4_identity(*view);
+void set_view_matrix(Camera *c) { 
+    glm_mat4_identity(c->view);
 
     vec3 target;
     glm_vec3_add(c->position, c->front, target);
-    glm_lookat(c->position, target, c->up, *view); 
+    glm_lookat(c->position, target, c->up, c->view); 
 }
 

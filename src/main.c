@@ -70,7 +70,7 @@ int main(void) {
     // Camera
     camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
 
-    mat4 projection, view, model;
+    mat4 projection, model;
 
     glm_mat4_identity(projection);
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
@@ -95,7 +95,7 @@ int main(void) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        set_view_matrix(&camera, &view);
+        set_view_matrix(&camera);
 
         glBindVertexArray(cube_mesh.vao);
         glUseProgram(object.shader_program);
@@ -105,7 +105,7 @@ int main(void) {
         glUniform3fv(object.light_pos_loc, 1, (float *)light_pos);
         glUniform3fv(object.view_pos_loc, 1, (float *)camera.position);
 
-        glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)view);
+        glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)camera.view);
         glUniformMatrix4fv(object.projection_loc, 1, GL_FALSE, (float *)projection);
 
         glm_mat4_identity(model);
@@ -117,7 +117,7 @@ int main(void) {
         glBindVertexArray(cube_mesh.vao);
         glUseProgram(light_source.shader_program);
   
-        glUniformMatrix4fv(light_source.view_loc, 1, GL_FALSE, (float *)view);
+        glUniformMatrix4fv(light_source.view_loc, 1, GL_FALSE, (float *)camera.view);
         glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);
  
         glm_mat4_identity(model); 

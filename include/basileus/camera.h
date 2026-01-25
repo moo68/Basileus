@@ -13,6 +13,8 @@ typedef struct {
     float yaw; 
     float fov;
     float sensitivity;
+
+    mat4 view;
 } Camera;
 
 
@@ -29,6 +31,6 @@ void move_camera_right(Camera *c, float distance);
 void look_camera_around(Camera *c, float x_pos, float y_pos, float *last_x, 
         float *last_y, bool *first_mouse);
 
-void set_view_matrix(Camera *c, mat4 *view);
+void set_view_matrix(Camera *c);
 
 #endif

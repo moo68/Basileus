@@ -10,6 +10,8 @@ A camera represents a kind of 1st person "viewport." It has these attributes:
     float fov;
     float sensitivity;
 
+    mat4 view;
+
 A camera's position vector literally represents its current position in world 
 space.
 
@@ -27,6 +29,11 @@ The FOV variable is literally just the camera's field of view in degrees.
 Sensitivity is literally just how sensitive the camera is to mouse input for
 the purposes of looking around. Note that this does not have anything to do with
 movement speed!
+
+The view variable is the 4x4 view matrix. The view matrix is a necessary piece
+of data to get passed into shaders in order for anything to render properly. 
+Because the camera is what exclusively modifies the view matrix (that's what a 
+camera actually is, a view matrix modifier), it lives in the camera struct.
 
 
 A camera can be created with the create_camera() function:
@@ -71,7 +78,7 @@ camera, though, they're not tracked as part of the camera.
 The whole purpose of the camera, from the renderer's point of view, is to
 update the view matrix. This is done with this function:
 
-    void set_view_matrix(Camera *c, mat4 *view);
+    void set_view_matrix(Camera *c);
 
 This set_view_matrix() function should be called once every single frame. By 
 doing so, all of the keyboard and mouse input will actually affect what can be
