@@ -8,6 +8,7 @@
 
 #include "basileus/mesh.h"
 #include "basileus/camera.h"
+#include "basileus/material.h"
 #include "basileus/shader_utils.h"
 #include "basileus/texture_utils.h"
 #include "basileus/debug_geometry.h"
@@ -74,14 +75,8 @@ int main(void) {
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
                 0.1f, 100.0f, projection);
    
-    unsigned int color_loc = glGetUniformLocation(shader_program, "object_color");
-    unsigned int light_loc = glGetUniformLocation(shader_program, "light_color");
-    unsigned int view_loc = glGetUniformLocation(shader_program, "view");
-    unsigned int projection_loc = glGetUniformLocation(shader_program, "projection");
-    unsigned int model_loc = glGetUniformLocation(shader_program, "model");
-    unsigned int light_view_loc = glGetUniformLocation(light_source_shader, "view");
-    unsigned int light_projection_loc = glGetUniformLocation(light_source_shader, "projection");
-    unsigned int light_model_loc = glGetUniformLocation(light_source_shader, "model");
+    Material object = create_material(shader_program);
+    Material light_source = create_material(light_source_shader);
 
     vec3 color, light;
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
@@ -101,31 +96,31 @@ int main(void) {
         set_view_matrix(&camera, &view);
 
         glBindVertexArray(cube_mesh.vao);
-        glUseProgram(shader_program);
+        glUseProgram(object.shader_program);
 
-        glUniform3fv(color_loc, 1, (float *)color);
-        glUniform3fv(light_loc, 1, (float *)light);
+        glUniform3fv(object.color_loc, 1, (float *)color);
+        glUniform3fv(object.light_loc, 1, (float *)light);
 
-        glUniformMatrix4fv(view_loc, 1, GL_FALSE, (float *)view);
-        glUniformMatrix4fv(projection_loc, 1, GL_FALSE, (float *)projection);
+        glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)view);
+        glUniformMatrix4fv(object.projection_loc, 1, GL_FALSE, (float *)projection);
 
         glm_mat4_identity(model);
         glm_translate(model, (vec3){-1.0f, 0.0f, 0.0f});
-        glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model);
+        glUniformMatrix4fv(object.model_loc, 1, GL_FALSE, (float *)model);
             
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
 
         glBindVertexArray(cube_mesh.vao);
-        glUseProgram(light_source_shader);
+        glUseProgram(light_source.shader_program);
   
-        glUniformMatrix4fv(light_view_loc, 1, GL_FALSE, (float *)view);
-        glUniformMatrix4fv(light_projection_loc, 1, GL_FALSE, (float *)projection);
+        glUniformMatrix4fv(light_source.view_loc, 1, GL_FALSE, (float *)view);
+        glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);
  
         glm_mat4_identity(model);
         glm_translate(model, (vec3){3.0f, 0.0f, -3.0f});
-        glUniformMatrix4fv(light_model_loc, 1, GL_FALSE, (float *)model);
+        glUniformMatrix4fv(light_source.model_loc, 1, GL_FALSE, (float *)model);
 
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
