@@ -2,7 +2,7 @@
 #define DEBUG_GEOMETRY_H
 
 typedef struct {
-    float vertices[72];
+    float vertices[144];
     unsigned int indices[36];
 } Cube;
 

@@ -48,9 +48,10 @@ void upload_mesh(Mesh *m, VertexLayout *layout) {
                 (void*)(offset * sizeof(float))); 
 
         offset += attribute.size;
+        glEnableVertexAttribArray(attribute.location);
     }
 
-    glEnableVertexAttribArray(0);
+    //glEnableVertexAttribArray(0);
 }
 
 VertexAttribute create_vertex_attribute(unsigned int location, 

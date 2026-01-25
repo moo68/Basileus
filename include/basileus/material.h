@@ -13,6 +13,7 @@ typedef struct {
 
     GLint color_loc;
     GLint light_loc;
+    GLint light_pos_loc;
 } Material;
 
 

@@ -13,6 +13,7 @@ Material create_material(GLuint shader_program) {
 
     mat.color_loc = glGetUniformLocation(shader_program, "object_color");
     mat.light_loc = glGetUniformLocation(shader_program, "light_color");
+    mat.light_pos_loc = glGetUniformLocation(shader_program, "light_position");
 
     return mat;
 }

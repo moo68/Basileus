@@ -54,12 +54,13 @@ int main(void) {
     // Data    
     Cube cube = generate_cube(); // TODO: Debug geometry should probably make
                                  // meshes, not its own type with redundant data?
-    Mesh cube_mesh = create_mesh(cube.vertices, 72, cube.indices, 36);
+    Mesh cube_mesh = create_mesh(cube.vertices, 144, cube.indices, 36);
 
     // Buffers
     VertexAttribute position = create_vertex_attribute(0, 3);
-    VertexAttribute pos_attributes[] = {position};
-    VertexLayout vertex_pos_layout = create_vertex_layout(pos_attributes, 1); 
+    VertexAttribute normal = create_vertex_attribute(1, 3);
+    VertexAttribute pos_attributes[] = {position, normal};
+    VertexLayout vertex_pos_layout = create_vertex_layout(pos_attributes, 2); 
 
     upload_mesh(&cube_mesh, &vertex_pos_layout); 
 
@@ -78,9 +79,10 @@ int main(void) {
     Material object = create_material(shader_program);
     Material light_source = create_material(light_source_shader);
 
-    vec3 color, light;
+    vec3 color, light, light_pos;
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
     glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light); 
+    glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
     
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
@@ -100,6 +102,7 @@ int main(void) {
 
         glUniform3fv(object.color_loc, 1, (float *)color);
         glUniform3fv(object.light_loc, 1, (float *)light);
+        glUniform3fv(object.light_pos_loc, 1, (float *)light_pos);
 
         glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)view);
         glUniformMatrix4fv(object.projection_loc, 1, GL_FALSE, (float *)projection);
@@ -117,7 +120,8 @@ int main(void) {
         glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);
  
         glm_mat4_identity(model);
-        glm_translate(model, (vec3){3.0f, 0.0f, -3.0f});
+        glm_vec3_rotate(light_pos, delta_time, (vec3){0.0f, 1.0f, 1.0f});
+        glm_translate(model, light_pos);
         glUniformMatrix4fv(light_source.model_loc, 1, GL_FALSE, (float *)model);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
