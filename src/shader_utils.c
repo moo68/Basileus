@@ -40,7 +40,7 @@ char *read_shader_file(const char* filepath) {
     return shader_source;
 }
 
-unsigned int create_shader(const GLchar *shader_source, GLenum shader_type) {
+unsigned int compile_shader_file(const GLchar *shader_source, GLenum shader_type) {
     unsigned int shader;
     shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &shader_source, NULL);
@@ -57,7 +57,8 @@ unsigned int create_shader(const GLchar *shader_source, GLenum shader_type) {
     return shader;
 }
 
-unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fragment_source) {
+unsigned int create_shader_program(const GLchar *vertex_source, 
+        const GLchar *fragment_source) {
     const char *vertex_shader_source = read_shader_file(vertex_source);
     if (vertex_shader_source == NULL) {
         fprintf(stderr, "ERROR! Failed to read vertex shader!");
@@ -67,8 +68,10 @@ unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fr
         fprintf(stderr, "ERROR! Failed to read fragment shader!"); 
     }
 
-    unsigned int vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
-    unsigned int fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
+    unsigned int vertex_shader = compile_shader_file(vertex_shader_source, 
+            GL_VERTEX_SHADER);
+    unsigned int fragment_shader = compile_shader_file(fragment_shader_source, 
+            GL_FRAGMENT_SHADER);
 
     unsigned int shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
@@ -86,5 +89,32 @@ unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fr
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
     return shader_program;
+}
+
+BasicShader create_basic_shader(unsigned int shader_program) {
+    BasicShader s;
+    
+    s.shader_program = shader_program;
+    s.model_loc = glGetUniformLocation(shader_program, "model");
+    s.view_loc = glGetUniformLocation(shader_program, "view");
+    s.projection_loc = glGetUniformLocation(shader_program, "projection");
+
+    return s;
+}
+
+PhongShader create_phong_shader(unsigned int shader_program) { 
+    PhongShader s;
+
+    s.shader_program = shader_program;
+    s.model_loc = glGetUniformLocation(shader_program, "model");
+    s.view_loc = glGetUniformLocation(shader_program, "view");
+    s.projection_loc = glGetUniformLocation(shader_program, "projection");
+
+    s.color_loc = glGetUniformLocation(shader_program, "object_color");
+    s.light_loc = glGetUniformLocation(shader_program, "light_color");
+    s.light_pos_loc = glGetUniformLocation(shader_program, "light_position");
+    s.view_pos_loc = glGetUniformLocation(shader_program, "view_position");
+
+    return s;
 }
 

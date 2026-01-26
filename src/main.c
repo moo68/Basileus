@@ -44,17 +44,19 @@ int main(void) {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // Shaders 
+    // Shaders
     /*unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
             "assets/shaders/fragment.glsl");*/
     unsigned int shader_program = create_shader_program("assets/shaders/debug_vertex.glsl",
             "assets/shaders/debug_fragment.glsl");
     unsigned int light_source_shader = create_shader_program("assets/shaders/lighting_vertex.glsl",
             "assets/shaders/lighting_fragment.glsl");
+ 
+    PhongShader phong_shader = create_phong_shader(shader_program);
+    BasicShader basic_shader = create_basic_shader(light_source_shader);
 
-    // Data    
-    Cube cube = generate_cube(); // TODO: Debug geometry should probably make
-                                 // meshes, not its own type with redundant data?
+    // Data
+    Cube cube = generate_cube();
     Mesh cube_mesh = create_mesh(cube.vertices, 144, cube.indices, 36);
 
     // Buffers
@@ -77,8 +79,8 @@ int main(void) {
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
                 0.1f, 100.0f, projection);
    
-    Material object = create_material(shader_program);
-    Material light_source = create_material(light_source_shader);
+    //Material object = create_material(shader_program);
+    //Material light_source = create_material(light_source_shader);
  
     vec3 color, light, light_pos;
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
@@ -87,7 +89,6 @@ int main(void) {
 
     Transform object_transform = create_transform();
     translate_transform(&object_transform, (vec3){-1.0f, 0.0f, 0.0f});
-    rotate_transform(&object_transform, (vec3){0.0f, 1.0f, 0.0f}, glm_rad(45.0f));
     Transform light_transform = create_transform();
     translate_transform(&light_transform, light_pos);
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
@@ -106,28 +107,26 @@ int main(void) {
         set_view_matrix(&camera);
 
         glBindVertexArray(cube_mesh.vao);
-        glUseProgram(object.shader_program);
 
-        glUniform3fv(object.color_loc, 1, (float *)color);
-        glUniform3fv(object.light_loc, 1, (float *)light);
-        glUniform3fv(object.light_pos_loc, 1, (float *)light_pos);
-        glUniform3fv(object.view_pos_loc, 1, (float *)camera.position);
+        glUseProgram(phong_shader.shader_program);
 
-        glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)camera.view);
-        glUniformMatrix4fv(object.projection_loc, 1, GL_FALSE, (float *)projection);
-        glUniformMatrix4fv(object.model_loc, 1, GL_FALSE, (float *)object_transform.model);
+        glUniform3fv(phong_shader.color_loc, 1, (float *)color);
+        glUniform3fv(phong_shader.light_loc, 1, (float *)light);
+        glUniform3fv(phong_shader.light_pos_loc, 1, (float *)light_pos);
+        glUniform3fv(phong_shader.view_pos_loc, 1, (float *)camera.position);
+        glUniformMatrix4fv(phong_shader.view_loc, 1, GL_FALSE, (float *)camera.view);
+        glUniformMatrix4fv(phong_shader.projection_loc, 1, GL_FALSE, (float *)projection);
+        glUniformMatrix4fv(phong_shader.model_loc, 1, GL_FALSE, (float *)object_transform.model);
             
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
+        glDrawElements(GL_TRIANGLES, cube_mesh.index_count, GL_UNSIGNED_INT, 0); 
 
-        glBindVertexArray(cube_mesh.vao);
-        glUseProgram(light_source.shader_program);
+        glUseProgram(basic_shader.shader_program);
   
-        glUniformMatrix4fv(light_source.view_loc, 1, GL_FALSE, (float *)camera.view);
-        glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);  
-        rotate_transform(&light_transform, (vec3){0.0f, 1.0f, 1.0f}, delta_time * 0.5f);
-        glUniformMatrix4fv(light_source.model_loc, 1, GL_FALSE, (float *)light_transform.model);
+        glUniformMatrix4fv(basic_shader.view_loc, 1, GL_FALSE, (float *)camera.view);
+        glUniformMatrix4fv(basic_shader.projection_loc, 1, GL_FALSE, (float *)projection);  
+        glUniformMatrix4fv(basic_shader.model_loc, 1, GL_FALSE, (float *)light_transform.model);
 
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, cube_mesh.index_count, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
