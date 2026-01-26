@@ -7,6 +7,7 @@
 #include <stb_image.h>
 
 #include "basileus/mesh.h"
+#include "basileus/transform.h"
 #include "basileus/camera.h"
 #include "basileus/material.h"
 #include "basileus/shader_utils.h"
@@ -70,7 +71,7 @@ int main(void) {
     // Camera
     camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
 
-    mat4 projection, model;
+    mat4 projection;
 
     glm_mat4_identity(projection);
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
@@ -78,11 +79,18 @@ int main(void) {
    
     Material object = create_material(shader_program);
     Material light_source = create_material(light_source_shader);
-
+ 
     vec3 color, light, light_pos;
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
     glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light); 
     glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
+
+    Transform object_transform = create_transform();
+    translate_transform(&object_transform, (vec3){-1.0f, 0.0f, 0.0f});
+    rotate_transform(&object_transform, (vec3){0.0f, 1.0f, 0.0f}, glm_rad(45.0f));
+    Transform light_transform = create_transform();
+    translate_transform(&light_transform, light_pos);
+    scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
     
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
@@ -107,10 +115,7 @@ int main(void) {
 
         glUniformMatrix4fv(object.view_loc, 1, GL_FALSE, (float *)camera.view);
         glUniformMatrix4fv(object.projection_loc, 1, GL_FALSE, (float *)projection);
-
-        glm_mat4_identity(model);
-        glm_translate(model, (vec3){-1.0f, 0.0f, 0.0f});
-        glUniformMatrix4fv(object.model_loc, 1, GL_FALSE, (float *)model);
+        glUniformMatrix4fv(object.model_loc, 1, GL_FALSE, (float *)object_transform.model);
             
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); 
 
@@ -118,13 +123,9 @@ int main(void) {
         glUseProgram(light_source.shader_program);
   
         glUniformMatrix4fv(light_source.view_loc, 1, GL_FALSE, (float *)camera.view);
-        glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);
- 
-        glm_mat4_identity(model); 
-        glm_vec3_rotate(light_pos, delta_time * 0.5f, (vec3){0.0f, 1.0f, 1.0f});
-        glm_translate(model, light_pos); 
-        glm_scale(model, (vec3){0.25f, 0.25f, 0.25f});
-        glUniformMatrix4fv(light_source.model_loc, 1, GL_FALSE, (float *)model);
+        glUniformMatrix4fv(light_source.projection_loc, 1, GL_FALSE, (float *)projection);  
+        rotate_transform(&light_transform, (vec3){0.0f, 1.0f, 1.0f}, delta_time * 0.5f);
+        glUniformMatrix4fv(light_source.model_loc, 1, GL_FALSE, (float *)light_transform.model);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
