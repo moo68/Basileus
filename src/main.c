@@ -15,6 +15,19 @@
 #include "basileus/debug_geometry.h"
 
 
+typedef enum {
+    SHADER_SIMPLE,
+    SHADER_PHONG
+} ShaderType;
+
+typedef struct {
+    Mesh mesh;
+    Transform transform;
+    ShaderType shader_type;
+    void *shader;
+} RenderObject;
+
+
 GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -92,6 +105,24 @@ int main(void) {
     Transform light_transform = create_transform();
     translate_transform(&light_transform, light_pos);
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
+
+    // RenderObjects
+    RenderObject phong_cube = {
+        .mesh = cube_mesh,
+        .transform = object_transform,
+        .shader_type = SHADER_PHONG,
+        .shader = (void *)(&phong_shader)
+    };
+ 
+    RenderObject light_cube = {
+        .mesh = cube_mesh,
+        .transform = light_transform,
+        .shader_type = SHADER_SIMPLE,
+        .shader = (void *)(&basic_shader)
+    };
+
+    RenderObject render_objects[2] = {phong_cube, light_cube};
+    int num_render_objects = 2;
     
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
@@ -106,27 +137,37 @@ int main(void) {
 
         set_view_matrix(&camera);
 
-        glBindVertexArray(cube_mesh.vao);
+        for (int i = 0; i < num_render_objects; i++) {
+            RenderObject curr_object = render_objects[i];
 
-        glUseProgram(phong_shader.shader_program);
+            glBindVertexArray(curr_object.mesh.vao);
 
-        glUniform3fv(phong_shader.color_loc, 1, (float *)color);
-        glUniform3fv(phong_shader.light_loc, 1, (float *)light);
-        glUniform3fv(phong_shader.light_pos_loc, 1, (float *)light_pos);
-        glUniform3fv(phong_shader.view_pos_loc, 1, (float *)camera.position);
-        glUniformMatrix4fv(phong_shader.view_loc, 1, GL_FALSE, (float *)camera.view);
-        glUniformMatrix4fv(phong_shader.projection_loc, 1, GL_FALSE, (float *)projection);
-        glUniformMatrix4fv(phong_shader.model_loc, 1, GL_FALSE, (float *)object_transform.model);
+            if (curr_object.shader_type == SHADER_SIMPLE) {
+                BasicShader *basic_shader = (BasicShader *)curr_object.shader;
+
+                glUseProgram(basic_shader->shader_program);
+
+                glUniformMatrix4fv(basic_shader->view_loc, 1, GL_FALSE, (float *)camera.view);
+                glUniformMatrix4fv(basic_shader->projection_loc, 1, GL_FALSE, (float *)projection);  
+                glUniformMatrix4fv(basic_shader->model_loc, 1, GL_FALSE, (float *)curr_object.transform.model);
+            }
+            else if (curr_object.shader_type == SHADER_PHONG) {
+                PhongShader *phong_shader = (PhongShader *)curr_object.shader;
+
+                glUseProgram(phong_shader->shader_program);
+
+                glUniformMatrix4fv(phong_shader->view_loc, 1, GL_FALSE, (float *)camera.view);
+                glUniformMatrix4fv(phong_shader->projection_loc, 1, GL_FALSE, (float *)projection);  
+                glUniformMatrix4fv(phong_shader->model_loc, 1, GL_FALSE, (float *)curr_object.transform.model);
+
+                glUniform3fv(phong_shader->color_loc, 1, (float *)color);
+                glUniform3fv(phong_shader->light_loc, 1, (float *)light);
+                glUniform3fv(phong_shader->light_pos_loc, 1, (float *)light_pos);
+                glUniform3fv(phong_shader->view_pos_loc, 1, (float *)camera.position);
+            }
             
-        glDrawElements(GL_TRIANGLES, cube_mesh.index_count, GL_UNSIGNED_INT, 0); 
-
-        glUseProgram(basic_shader.shader_program);
-  
-        glUniformMatrix4fv(basic_shader.view_loc, 1, GL_FALSE, (float *)camera.view);
-        glUniformMatrix4fv(basic_shader.projection_loc, 1, GL_FALSE, (float *)projection);  
-        glUniformMatrix4fv(basic_shader.model_loc, 1, GL_FALSE, (float *)light_transform.model);
-
-        glDrawElements(GL_TRIANGLES, cube_mesh.index_count, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, curr_object.mesh.index_count, GL_UNSIGNED_INT, 0);
+        }
 
         glBindVertexArray(0);
 
