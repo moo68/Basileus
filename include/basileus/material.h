@@ -6,7 +6,6 @@
 
 
 typedef struct {
-    vec3 ambient_light, diffuse_light, specular_light;
     vec3 ambient, diffuse, specular;
     float shininess;
 } PhongMaterial;

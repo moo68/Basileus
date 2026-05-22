@@ -6,6 +6,7 @@
 #include "basileus/camera.h"
 #include "basileus/mesh.h"
 #include "basileus/transform.h"
+#include "basileus/light.h"
 
 
 typedef struct Shader Shader;
@@ -14,7 +15,7 @@ typedef struct RenderContext {
     Camera camera;
     mat4 projection;
 
-    vec3 light_position;
+    Light light;
 
     float delta_time;
     float last_frame; 

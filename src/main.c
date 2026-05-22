@@ -14,6 +14,7 @@
 #include "basileus/texture_utils.h"
 #include "basileus/debug_geometry.h"
 #include "basileus/renderer.h"
+#include "basileus/light.h"
 
 
 GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
@@ -76,7 +77,12 @@ int main(void) {
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
                 0.1f, 100.0f, render_context.projection);
  
-    glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, render_context.light_position);
+    vec3 light_pos, light_amb, light_diff, light_spec;
+    glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
+    glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, light_amb);
+    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, light_diff);
+    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light_spec);
+    render_context.light = create_light(light_pos, light_amb, light_diff, light_spec);
 
     // Materials
     vec3 ambient, diffuse, specular;
@@ -91,7 +97,7 @@ int main(void) {
     translate_transform(&object_transform, (vec3){-1.0f, 0.0f, 0.0f});
 
     Transform light_transform = create_transform();
-    translate_transform(&light_transform, render_context.light_position);
+    translate_transform(&light_transform, render_context.light.position);
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     // RenderObjects

@@ -153,10 +153,10 @@ void upload_phong_uniforms(RenderContext *context, RenderObject *object) {
     glUniform3fv(shader->specular_loc, 1, (float *)material->specular);
     glUniform1f(shader->shininess_loc, material->shininess);
 
-    glUniform3fv(shader->ambient_light_loc, 1, (float *)material->ambient_light);
-    glUniform3fv(shader->specular_light_loc, 1, (float *)material->specular_light);
-    glUniform3fv(shader->diffuse_light_loc, 1, (float *)material->diffuse_light);
-    glUniform3fv(shader->light_pos_loc, 1, (float *)context->light_position);
+    glUniform3fv(shader->ambient_light_loc, 1, (float *)context->light.ambient);
+    glUniform3fv(shader->specular_light_loc, 1, (float *)context->light.specular);
+    glUniform3fv(shader->diffuse_light_loc, 1, (float *)context->light.diffuse);
+    glUniform3fv(shader->light_pos_loc, 1, (float *)context->light.position);
 
     glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
 }
