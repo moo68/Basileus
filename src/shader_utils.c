@@ -110,9 +110,17 @@ PhongShader create_phong_shader(unsigned int shader_program) {
     s.view_loc = glGetUniformLocation(shader_program, "view");
     s.projection_loc = glGetUniformLocation(shader_program, "projection");
 
-    s.color_loc = glGetUniformLocation(shader_program, "object_color");
-    s.light_loc = glGetUniformLocation(shader_program, "light_color");
-    s.light_pos_loc = glGetUniformLocation(shader_program, "light_position");
+    s.ambient_loc = glGetUniformLocation(shader_program, "material.ambient");
+    s.diffuse_loc = glGetUniformLocation(shader_program, "material.diffuse");
+    s.specular_loc = glGetUniformLocation(shader_program, "material.specular");
+    s.shininess_loc = glGetUniformLocation(shader_program, "material.shininess");
+
+    //s.light_loc = glGetUniformLocation(shader_program, "light_color");
+    s.ambient_light_loc = glGetUniformLocation(shader_program, "light.ambient");
+    s.diffuse_light_loc = glGetUniformLocation(shader_program, "light.diffuse");
+    s.specular_light_loc = glGetUniformLocation(shader_program, "light.specular");
+    s.light_pos_loc = glGetUniformLocation(shader_program, "light.position");
+
     s.view_pos_loc = glGetUniformLocation(shader_program, "view_position");
 
     return s;

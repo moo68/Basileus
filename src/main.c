@@ -95,10 +95,19 @@ int main(void) {
     //Material object = create_material(shader_program);
     //Material light_source = create_material(light_source_shader);
  
-    vec3 color, light, light_pos;
-    glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, color);
-    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light); 
+    // Phong light attributes.
+    vec3 ambient_light, diffuse_light, specular_light, light_pos;
+    glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, ambient_light);
+    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, diffuse_light);
+    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, specular_light);
     glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
+
+    // Phong material attributes.
+    vec3 ambient, diffuse, specular;
+    glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, ambient); 
+    glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, diffuse); 
+    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, specular); 
+    float shininess = 32.0f;
 
     Transform object_transform = create_transform();
     translate_transform(&object_transform, (vec3){-1.0f, 0.0f, 0.0f});
@@ -160,9 +169,16 @@ int main(void) {
                 glUniformMatrix4fv(phong_shader->projection_loc, 1, GL_FALSE, (float *)projection);  
                 glUniformMatrix4fv(phong_shader->model_loc, 1, GL_FALSE, (float *)curr_object.transform.model);
 
-                glUniform3fv(phong_shader->color_loc, 1, (float *)color);
-                glUniform3fv(phong_shader->light_loc, 1, (float *)light);
+                glUniform3fv(phong_shader->ambient_loc, 1, (float *)ambient);
+                glUniform3fv(phong_shader->diffuse_loc, 1, (float *)diffuse);
+                glUniform3fv(phong_shader->specular_loc, 1, (float *)specular);
+                glUniform1f(phong_shader->shininess_loc, shininess);
+
+                glUniform3fv(phong_shader->ambient_light_loc, 1, (float *)ambient_light);
+                glUniform3fv(phong_shader->specular_light_loc, 1, (float *)specular_light);
+                glUniform3fv(phong_shader->diffuse_light_loc, 1, (float *)diffuse_light);
                 glUniform3fv(phong_shader->light_pos_loc, 1, (float *)light_pos);
+
                 glUniform3fv(phong_shader->view_pos_loc, 1, (float *)camera.position);
             }
             
