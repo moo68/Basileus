@@ -1,0 +1,63 @@
+
+This is an overview of the general architecture of Basileus, without going into
+any hyper-specific details. It's meant to be kept up to date as the engine
+evolves.
+
+
+Fundamentally, in order to render something on screen, there are two things
+that are necessary: a RenderContext and a RenderObject.
+
+The RenderContext is a kind of global state that is applicable to everything in
+the entire scene. Things like the engine's camera, projection matrix, and also
+data about all the lights in a scene live in the RenderContext.
+
+
+A RenderObject is a specific "thing" to actually be rendered in the virtual
+world. RenderObjects contain/point to four fundamental structs:
+    - Mesh
+    - Transform
+    - Shader
+    - Material
+
+A Mesh contains all of the vertex and index data for an object, as well as
+vertex, index, and vertex attribute buffers.
+
+A Transform contains all the data about the object's position in the virtual
+world, including position, rotation, and scaling. It also holds the object's
+model matrix.
+
+A Shader holds the handle to a compiled shader program, the locations for that
+shader program's uniform values, and a function pointer to a function that
+uploads all of the shader's uniforms to the GPU. More on that in a second.
+
+A Material holds all of the extra data that a shader might need in order to run
+properly. Things like surface color, shininess, or images used for textures are
+all things that can live in a Material.
+
+
+So what does rendering an object actually look like in practice? Just a few
+steps:
+    1) Bind the RenderObject's vertex attributes.
+    2) Start using the RenderObject's shader program.
+    3) Upload all necessary uniforms.
+    4) Draw triangles.
+
+Steps 1, 2, and 4 are incredibly elementary. Those steps simply involve calling
+a few OpenGL functions and providing them data stored in the RenderObject's
+Mesh (vertex attributes and vertices/indices info) and Shader (the shader
+program handle).
+
+Step 3 involves the aformentioned uniform upload function pointer. All shaders
+contain a pointer to a function, and that function always takes two parameters:
+a RenderContext and a RenderObject. Then, from those two locations, all
+necessary data is uploaded into the RenderObject shader's uniforms. This works
+because any and all data that a shader might require for rendering will always
+be contained either in the RenderContext or in one of the four structs that
+make up a RenderObject.
+
+The exact implementation of this is done via some C-style inheritence (see
+other documentation for details).
+
+
+And that's it!
+
