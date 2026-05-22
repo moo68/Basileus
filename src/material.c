@@ -1,21 +1,24 @@
 #include "basileus/material.h"
 
 #include <glad/gl.h>
+#include <cglm/cglm.h>
+
+#include <stdlib.h>
 
 
-Material create_material(GLuint shader_program) {
-    Material mat;
-    mat.shader_program = shader_program;
+PhongMaterial *create_phong_material(vec3 ambient, vec3 diffuse, vec3 specular,
+                                     float shininess) {
+    PhongMaterial *m = malloc(sizeof(PhongMaterial));
 
-    mat.model_loc = glGetUniformLocation(shader_program, "model");
-    mat.view_loc = glGetUniformLocation(shader_program, "view");
-    mat.projection_loc = glGetUniformLocation(shader_program, "projection");
+    glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, m->ambient_light);
+    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, m->diffuse_light);
+    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, m->specular_light);
 
-    mat.color_loc = glGetUniformLocation(shader_program, "object_color");
-    mat.light_loc = glGetUniformLocation(shader_program, "light_color");
-    mat.light_pos_loc = glGetUniformLocation(shader_program, "light_position");
-    mat.view_pos_loc = glGetUniformLocation(shader_program, "view_position");
+    glm_vec3_copy(ambient, m->ambient); 
+    glm_vec3_copy(diffuse, m->diffuse); 
+    glm_vec3_copy(specular, m->specular); 
+    m->shininess = shininess;
 
-    return mat;
+    return m;
 }
 

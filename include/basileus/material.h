@@ -2,24 +2,18 @@
 #define MATERIAL_H
 
 #include <glad/gl.h>
+#include <cglm/cglm.h>
 
 
 typedef struct {
-    GLuint shader_program;
-
-    GLint model_loc;
-    GLint view_loc;
-    GLint projection_loc;
-
-    GLint color_loc;
-    GLint light_loc;
-    GLint light_pos_loc;
-    GLint view_pos_loc;
-} Material;
+    vec3 ambient_light, diffuse_light, specular_light;
+    vec3 ambient, diffuse, specular;
+    float shininess;
+} PhongMaterial;
 
 
-
-Material create_material(GLuint shader_program);
+PhongMaterial *create_phong_material(vec3 ambient, vec3 diffuse, vec3 specular,
+                                     float shininess);
 
 #endif
 

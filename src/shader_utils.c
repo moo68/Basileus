@@ -1,4 +1,6 @@
 #include "basileus/shader_utils.h"
+#include "basileus/renderer.h"
+#include "basileus/material.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,38 +93,71 @@ unsigned int create_shader_program(const GLchar *vertex_source,
     return shader_program;
 }
 
-BasicShader create_basic_shader(unsigned int shader_program) {
-    BasicShader s;
+SimpleShader *create_simple_shader(unsigned int shader_program) {
+    SimpleShader *s = malloc(sizeof(SimpleShader));
     
-    s.shader_program = shader_program;
-    s.model_loc = glGetUniformLocation(shader_program, "model");
-    s.view_loc = glGetUniformLocation(shader_program, "view");
-    s.projection_loc = glGetUniformLocation(shader_program, "projection");
+    s->base.shader_program = shader_program;
+    s->base.upload_uniforms = upload_simple_uniforms;
+
+    s->model_loc = glGetUniformLocation(shader_program, "model");
+    s->view_loc = glGetUniformLocation(shader_program, "view");
+    s->projection_loc = glGetUniformLocation(shader_program, "projection");
 
     return s;
 }
 
-PhongShader create_phong_shader(unsigned int shader_program) { 
-    PhongShader s;
+void upload_simple_uniforms(RenderContext *context, RenderObject *object) {
+    SimpleShader *shader = (SimpleShader *)object->shader;
 
-    s.shader_program = shader_program;
-    s.model_loc = glGetUniformLocation(shader_program, "model");
-    s.view_loc = glGetUniformLocation(shader_program, "view");
-    s.projection_loc = glGetUniformLocation(shader_program, "projection");
+    glUniformMatrix4fv(shader->view_loc, 1, GL_FALSE, (float *)context->camera.view);
+    glUniformMatrix4fv(shader->projection_loc, 1, GL_FALSE, (float *)context->projection);
+    glUniformMatrix4fv(shader->model_loc, 1, GL_FALSE, (float *)object->transform.model);
+}
 
-    s.ambient_loc = glGetUniformLocation(shader_program, "material.ambient");
-    s.diffuse_loc = glGetUniformLocation(shader_program, "material.diffuse");
-    s.specular_loc = glGetUniformLocation(shader_program, "material.specular");
-    s.shininess_loc = glGetUniformLocation(shader_program, "material.shininess");
+PhongShader *create_phong_shader(unsigned int shader_program) { 
+    PhongShader *s = malloc(sizeof(PhongShader));
 
-    //s.light_loc = glGetUniformLocation(shader_program, "light_color");
-    s.ambient_light_loc = glGetUniformLocation(shader_program, "light.ambient");
-    s.diffuse_light_loc = glGetUniformLocation(shader_program, "light.diffuse");
-    s.specular_light_loc = glGetUniformLocation(shader_program, "light.specular");
-    s.light_pos_loc = glGetUniformLocation(shader_program, "light.position");
+    s->base.shader_program = shader_program;
+    s->base.upload_uniforms = upload_phong_uniforms;
 
-    s.view_pos_loc = glGetUniformLocation(shader_program, "view_position");
+    s->model_loc = glGetUniformLocation(shader_program, "model");
+    s->view_loc = glGetUniformLocation(shader_program, "view");
+    s->projection_loc = glGetUniformLocation(shader_program, "projection");
+
+    s->ambient_loc = glGetUniformLocation(shader_program, "material.ambient");
+    s->diffuse_loc = glGetUniformLocation(shader_program, "material.diffuse");
+    s->specular_loc = glGetUniformLocation(shader_program, "material.specular");
+    s->shininess_loc = glGetUniformLocation(shader_program, "material.shininess");
+
+    s->ambient_light_loc = glGetUniformLocation(shader_program, "light.ambient");
+    s->diffuse_light_loc = glGetUniformLocation(shader_program, "light.diffuse");
+    s->specular_light_loc = glGetUniformLocation(shader_program, "light.specular");
+    s->light_pos_loc = glGetUniformLocation(shader_program, "light.position");
+
+    s->view_pos_loc = glGetUniformLocation(shader_program, "view_position");
 
     return s;
+}
+
+void upload_phong_uniforms(RenderContext *context, RenderObject *object) {
+    PhongShader *shader = (PhongShader *)object->shader;
+
+    glUniformMatrix4fv(shader->view_loc, 1, GL_FALSE, (float *)context->camera.view);
+    glUniformMatrix4fv(shader->projection_loc, 1, GL_FALSE, (float *)context->projection);
+    glUniformMatrix4fv(shader->model_loc, 1, GL_FALSE, (float *)object->transform.model);
+
+    PhongMaterial *material = (PhongMaterial *)object->material;
+
+    glUniform3fv(shader->ambient_loc, 1, (float *)material->ambient);
+    glUniform3fv(shader->diffuse_loc, 1, (float *)material->diffuse);
+    glUniform3fv(shader->specular_loc, 1, (float *)material->specular);
+    glUniform1f(shader->shininess_loc, material->shininess);
+
+    glUniform3fv(shader->ambient_light_loc, 1, (float *)material->ambient_light);
+    glUniform3fv(shader->specular_light_loc, 1, (float *)material->specular_light);
+    glUniform3fv(shader->diffuse_light_loc, 1, (float *)material->diffuse_light);
+    glUniform3fv(shader->light_pos_loc, 1, (float *)context->light_position);
+
+    glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
 }
 

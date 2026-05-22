@@ -13,19 +13,7 @@
 #include "basileus/shader_utils.h"
 #include "basileus/texture_utils.h"
 #include "basileus/debug_geometry.h"
-
-
-typedef enum {
-    SHADER_SIMPLE,
-    SHADER_PHONG
-} ShaderType;
-
-typedef struct {
-    Mesh mesh;
-    Transform transform;
-    ShaderType shader_type;
-    void *shader;
-} RenderObject;
+#include "basileus/renderer.h"
 
 
 GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
@@ -35,15 +23,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void process_input(GLFWwindow *window);
 
 
+RenderContext render_context = {0};
+
 bool is_wireframe = false;
 
-Camera camera;
 bool first_mouse = true;
 float last_x =  1280.0f / 2.0;
 float last_y =  720.0 / 2.0;
-
-float delta_time = 0.0f;
-float last_frame = 0.0f;
 
 
 int main(void) { 
@@ -65,14 +51,13 @@ int main(void) {
     unsigned int light_source_shader = create_shader_program("assets/shaders/lighting_vertex.glsl",
             "assets/shaders/lighting_fragment.glsl");
  
-    PhongShader phong_shader = create_phong_shader(shader_program);
-    BasicShader basic_shader = create_basic_shader(light_source_shader);
+    PhongShader *phong_shader = create_phong_shader(shader_program);
+    SimpleShader *simple_shader = create_simple_shader(light_source_shader);
 
-    // Data
+    // Meshes and Buffers
     Cube cube = generate_cube();
     Mesh cube_mesh = create_mesh(cube.vertices, 144, cube.indices, 36);
 
-    // Buffers
     VertexAttribute position = create_vertex_attribute(0, 3);
     VertexAttribute normal = create_vertex_attribute(1, 3);
     VertexAttribute pos_attributes[] = {position, normal};
@@ -83,51 +68,45 @@ int main(void) {
     // Textures 
     //unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
 
-    // Camera
-    camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
+    // Render context 
+    Camera camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
+    render_context.camera = camera;
 
-    mat4 projection;
-
-    glm_mat4_identity(projection);
+    glm_mat4_identity(render_context.projection);
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
-                0.1f, 100.0f, projection);
-   
-    //Material object = create_material(shader_program);
-    //Material light_source = create_material(light_source_shader);
+                0.1f, 100.0f, render_context.projection);
  
-    // Phong light attributes.
-    vec3 ambient_light, diffuse_light, specular_light, light_pos;
-    glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, ambient_light);
-    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, diffuse_light);
-    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, specular_light);
-    glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
+    glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, render_context.light_position);
 
-    // Phong material attributes.
+    // Materials
     vec3 ambient, diffuse, specular;
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, ambient); 
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, diffuse); 
     glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, specular); 
     float shininess = 32.0f;
-
+    PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
+ 
+    // Transforms
     Transform object_transform = create_transform();
     translate_transform(&object_transform, (vec3){-1.0f, 0.0f, 0.0f});
+
     Transform light_transform = create_transform();
-    translate_transform(&light_transform, light_pos);
+    translate_transform(&light_transform, render_context.light_position);
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     // RenderObjects
     RenderObject phong_cube = {
-        .mesh = cube_mesh,
+        .mesh = &cube_mesh,
         .transform = object_transform,
-        .shader_type = SHADER_PHONG,
-        .shader = (void *)(&phong_shader)
+        .shader = (Shader *)phong_shader,
+        .material = phong_mat
     };
  
     RenderObject light_cube = {
-        .mesh = cube_mesh,
+        .mesh = &cube_mesh,
         .transform = light_transform,
-        .shader_type = SHADER_SIMPLE,
-        .shader = (void *)(&basic_shader)
+        .shader = (Shader *)simple_shader,
+        .material = NULL
     };
 
     RenderObject render_objects[2] = {phong_cube, light_cube};
@@ -136,53 +115,26 @@ int main(void) {
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
         float current_frame = (float)(glfwGetTime());
-        delta_time = current_frame - last_frame;
-        last_frame = current_frame;
+        render_context.delta_time = current_frame - render_context.last_frame;
+        render_context.last_frame = current_frame;
 
         process_input(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        set_view_matrix(&camera);
+        set_view_matrix(&(render_context.camera));
 
         for (int i = 0; i < num_render_objects; i++) {
             RenderObject curr_object = render_objects[i];
 
-            glBindVertexArray(curr_object.mesh.vao);
+            glBindVertexArray(curr_object.mesh->vao);
 
-            if (curr_object.shader_type == SHADER_SIMPLE) {
-                BasicShader *basic_shader = (BasicShader *)curr_object.shader;
+            glUseProgram(curr_object.shader->shader_program);
 
-                glUseProgram(basic_shader->shader_program);
+            curr_object.shader->upload_uniforms(&render_context, &curr_object);
 
-                glUniformMatrix4fv(basic_shader->view_loc, 1, GL_FALSE, (float *)camera.view);
-                glUniformMatrix4fv(basic_shader->projection_loc, 1, GL_FALSE, (float *)projection);  
-                glUniformMatrix4fv(basic_shader->model_loc, 1, GL_FALSE, (float *)curr_object.transform.model);
-            }
-            else if (curr_object.shader_type == SHADER_PHONG) {
-                PhongShader *phong_shader = (PhongShader *)curr_object.shader;
-
-                glUseProgram(phong_shader->shader_program);
-
-                glUniformMatrix4fv(phong_shader->view_loc, 1, GL_FALSE, (float *)camera.view);
-                glUniformMatrix4fv(phong_shader->projection_loc, 1, GL_FALSE, (float *)projection);  
-                glUniformMatrix4fv(phong_shader->model_loc, 1, GL_FALSE, (float *)curr_object.transform.model);
-
-                glUniform3fv(phong_shader->ambient_loc, 1, (float *)ambient);
-                glUniform3fv(phong_shader->diffuse_loc, 1, (float *)diffuse);
-                glUniform3fv(phong_shader->specular_loc, 1, (float *)specular);
-                glUniform1f(phong_shader->shininess_loc, shininess);
-
-                glUniform3fv(phong_shader->ambient_light_loc, 1, (float *)ambient_light);
-                glUniform3fv(phong_shader->specular_light_loc, 1, (float *)specular_light);
-                glUniform3fv(phong_shader->diffuse_light_loc, 1, (float *)diffuse_light);
-                glUniform3fv(phong_shader->light_pos_loc, 1, (float *)light_pos);
-
-                glUniform3fv(phong_shader->view_pos_loc, 1, (float *)camera.position);
-            }
-            
-            glDrawElements(GL_TRIANGLES, curr_object.mesh.index_count, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, curr_object.mesh->index_count, GL_UNSIGNED_INT, 0);
         }
 
         glBindVertexArray(0);
@@ -268,25 +220,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     (void)window; 
 
-    look_camera_around(&camera, xpos, ypos, &last_x, &last_y, &first_mouse); 
+    look_camera_around(&(render_context.camera), xpos, ypos, &last_x, &last_y, &first_mouse); 
 }
 
 void process_input(GLFWwindow *window) {
     (void)window;
 
-    const float speed = 2.5f * delta_time; 
+    const float speed = 2.5f * render_context.delta_time; 
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        move_camera_forward(&camera, speed);
+        move_camera_forward(&(render_context.camera), speed);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        move_camera_backward(&camera, speed);
+        move_camera_backward(&(render_context.camera), speed);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        move_camera_left(&camera, speed);
+        move_camera_left(&(render_context.camera), speed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        move_camera_right(&camera, speed);
+        move_camera_right(&(render_context.camera), speed);
     }
 }
 

@@ -5,16 +5,24 @@
 #include <glad/gl.h>
 
 
-typedef struct {
+typedef struct RenderObject RenderObject;
+typedef struct RenderContext RenderContext;
+
+typedef struct Shader {
     GLuint shader_program;
+    void (*upload_uniforms)(RenderContext *context, RenderObject *object);
+} Shader;
+
+typedef struct {
+    Shader base;
 
     GLint model_loc;
     GLint view_loc;
     GLint projection_loc;
-} BasicShader;
+} SimpleShader;
 
 typedef struct {
-    GLuint shader_program;
+    Shader base;
 
     GLint model_loc;
     GLint view_loc;
@@ -42,9 +50,13 @@ unsigned int compile_shader_file(const GLchar *shader_source, GLenum shader_type
 
 unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fragment_source);
 
-BasicShader create_basic_shader(unsigned int shader_program);
+SimpleShader *create_simple_shader(unsigned int shader_program);
 
-PhongShader create_phong_shader(unsigned int shader_program);
+void upload_simple_uniforms(RenderContext *context, RenderObject *object);
+
+PhongShader *create_phong_shader(unsigned int shader_program);
+
+void upload_phong_uniforms(RenderContext *context, RenderObject *object);
 
 #endif
 
