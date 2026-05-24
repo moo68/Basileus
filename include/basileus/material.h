@@ -10,6 +10,13 @@ typedef struct {
     float shininess;
 } PhongMaterial;
 
+typedef struct {
+    vec3 ambient, diffuse, specular;
+    float shininess;
+
+    unsigned int texture;
+} TexturedPhongMaterial;
+
 
 PhongMaterial *create_phong_material(vec3 ambient, vec3 diffuse, vec3 specular,
                                      float shininess);

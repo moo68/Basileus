@@ -51,9 +51,12 @@ int main(void) {
             "assets/shaders/debug_fragment.glsl");
     unsigned int light_source_shader = create_shader_program("assets/shaders/lighting_vertex.glsl",
             "assets/shaders/lighting_fragment.glsl");
+    unsigned int textured_phong_shader_program = create_shader_program("assets/shaders/textured_phong_vert.glsl",
+            "assets/shaders/textured_phong_frag.glsl");
  
     PhongShader *phong_shader = create_phong_shader(shader_program);
     SimpleShader *simple_shader = create_simple_shader(light_source_shader);
+    PhongShader *textured_phong_shader = create_phong_shader(textured_phong_shader_program);
 
     // Meshes and Buffers
     Cube cube = generate_cube();
@@ -64,10 +67,20 @@ int main(void) {
     VertexAttribute pos_attributes[] = {position, normal};
     VertexLayout vertex_pos_layout = create_vertex_layout(pos_attributes, 2); 
 
-    upload_mesh(&cube_mesh, &vertex_pos_layout); 
+    upload_mesh(&cube_mesh, &vertex_pos_layout);
+
+    TexturedCube tex_cube = generate_textured_cube();
+    Mesh tex_cube_mesh = create_mesh(tex_cube.vertices, 192, tex_cube.indices, 36);
+
+    VertexAttribute uv_coord = create_vertex_attribute(2, 2);
+    VertexAttribute textured_attributes[] = {position, normal, uv_coord};
+    VertexLayout textured_layout = create_vertex_layout(textured_attributes, 3);
+
+    upload_mesh(&tex_cube_mesh, &textured_layout);
 
     // Textures 
-    //unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+    unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     // Render context 
     Camera camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
@@ -91,6 +104,8 @@ int main(void) {
     glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, specular); 
     float shininess = 32.0f;
     PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
+
+    //TexturedPhongMaterial *tex_phong_mat = create_textured_phong_material();
  
     // Transforms
     Transform object_transform = create_transform();
@@ -101,12 +116,12 @@ int main(void) {
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     // RenderObjects
-    RenderObject phong_cube = {
+    /*RenderObject phong_cube = {
         .mesh = &cube_mesh,
         .transform = object_transform,
         .shader = (Shader *)phong_shader,
         .material = phong_mat
-    };
+    };*/
  
     RenderObject light_cube = {
         .mesh = &cube_mesh,
@@ -115,7 +130,14 @@ int main(void) {
         .material = NULL
     };
 
-    RenderObject render_objects[2] = {phong_cube, light_cube};
+    RenderObject tex_phong_cube = {
+        .mesh = &tex_cube_mesh,
+        .transform = object_transform,
+        .shader = (Shader *)textured_phong_shader,
+        .material = phong_mat
+    };
+
+    RenderObject render_objects[2] = {/*phong_cube,*/ light_cube, tex_phong_cube};
     int num_render_objects = 2;
     
     // Render Loop

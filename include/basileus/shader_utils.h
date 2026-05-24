@@ -43,6 +43,28 @@ typedef struct {
     GLint view_pos_loc;
 } PhongShader;
 
+typedef struct {
+    Shader base;
+
+    GLint model_loc;
+    GLint view_loc;
+    GLint projection_loc;
+
+    // Phong material attributes.
+    GLint ambient_loc;
+    GLint diffuse_loc;
+    GLint specular_loc;
+    GLint shininess_loc;
+
+    // Phong light attributes.
+    GLint ambient_light_loc;
+    GLint diffuse_light_loc;
+    GLint specular_light_loc;
+    GLint light_pos_loc;
+
+    GLint view_pos_loc;
+} TexturedPhongShader;
+
 
 char *read_shader_file(const char* filepath);
 
