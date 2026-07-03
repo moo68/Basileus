@@ -45,17 +45,17 @@ int main(void) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Shaders
-    /*unsigned int shader_program = create_shader_program("assets/shaders/vertex.glsl",
-            "assets/shaders/fragment.glsl");*/
-    unsigned int shader_program = create_shader_program("assets/shaders/debug_vertex.glsl",
-            "assets/shaders/debug_fragment.glsl");
-    unsigned int light_source_shader = create_shader_program("assets/shaders/lighting_vertex.glsl",
-            "assets/shaders/lighting_fragment.glsl");
+    /*unsigned int textured_shader_program = create_shader_program("assets/shaders/textured_vert.glsl",
+            "assets/shaders/textured_frag.glsl");*/
+    unsigned int phong_shader_program = create_shader_program("assets/shaders/phong_vert.glsl",
+            "assets/shaders/phong_frag.glsl");
+    unsigned int light_source_shader_program = create_shader_program("assets/shaders/light_source_vert.glsl",
+            "assets/shaders/light_source_frag.glsl");
     unsigned int textured_phong_shader_program = create_shader_program("assets/shaders/textured_phong_vert.glsl",
             "assets/shaders/textured_phong_frag.glsl");
  
-    PhongShader *phong_shader = create_phong_shader(shader_program);
-    SimpleShader *simple_shader = create_simple_shader(light_source_shader);
+    PhongShader *phong_shader = create_phong_shader(phong_shader_program);
+    SimpleShader *light_source_shader = create_simple_shader(light_source_shader_program);
     PhongShader *textured_phong_shader = create_phong_shader(textured_phong_shader_program);
 
     // Meshes and Buffers
@@ -79,7 +79,7 @@ int main(void) {
     upload_mesh(&tex_cube_mesh, &textured_layout);
 
     // Textures 
-    unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+    unsigned int texture = load_texture("assets/textures/container2.png"); 
     glBindTexture(GL_TEXTURE_2D, texture);
 
     // Render context 
@@ -90,6 +90,7 @@ int main(void) {
     glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
                 0.1f, 100.0f, render_context.projection);
  
+    // TODO: Lights should store a Transform for their position, not their own separate vec3?
     vec3 light_pos, light_amb, light_diff, light_spec;
     glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
     glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, light_amb);
@@ -116,28 +117,28 @@ int main(void) {
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     // RenderObjects
-    /*RenderObject phong_cube = {
+    RenderObject phong_cube = {
         .mesh = &cube_mesh,
         .transform = object_transform,
         .shader = (Shader *)phong_shader,
         .material = phong_mat
-    };*/
+    };
  
     RenderObject light_cube = {
         .mesh = &cube_mesh,
         .transform = light_transform,
-        .shader = (Shader *)simple_shader,
+        .shader = (Shader *)light_source_shader,
         .material = NULL
     };
 
-    RenderObject tex_phong_cube = {
+    /*RenderObject tex_phong_cube = {
         .mesh = &tex_cube_mesh,
         .transform = object_transform,
         .shader = (Shader *)textured_phong_shader,
         .material = phong_mat
-    };
+    };*/
 
-    RenderObject render_objects[2] = {/*phong_cube,*/ light_cube, tex_phong_cube};
+    RenderObject render_objects[2] = {phong_cube, light_cube, /*tex_phong_cube*/};
     int num_render_objects = 2;
     
     // Render Loop
@@ -173,8 +174,9 @@ int main(void) {
 
     // Shutdown cleanup
     cleanup_mesh(&cube_mesh);
-    glDeleteProgram(shader_program);
-    glDeleteProgram(light_source_shader);
+    //glDeleteProgram(shader_program);
+    glDeleteProgram(light_source_shader_program);
+    glDeleteProgram(textured_phong_shader_program);
         
     glfwTerminate();
     return 0;
