@@ -106,7 +106,7 @@ int main(void) {
     PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
 
     TexturedPhongMaterial *textured_phong_mat =
-        create_textured_phong_material(ambient, diffuse, specular, shininess, texture);
+        create_textured_phong_material(texture, specular, shininess);
  
     // Transforms
     Transform object_transform = create_transform();

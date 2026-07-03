@@ -51,8 +51,7 @@ typedef struct {
     GLint projection_loc;
 
     // Phong material attributes.
-    GLint ambient_loc;
-    GLint diffuse_loc;
+    GLint diffuse_tex_loc;
     GLint specular_loc;
     GLint shininess_loc;
 
@@ -63,9 +62,6 @@ typedef struct {
     GLint light_pos_loc;
 
     GLint view_pos_loc;
-
-    // Textures
-    GLint texture1_loc;
 } TexturedPhongShader;
 
 

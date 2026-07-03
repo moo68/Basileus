@@ -171,8 +171,8 @@ TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program) {
     s->view_loc = glGetUniformLocation(shader_program, "view");
     s->projection_loc = glGetUniformLocation(shader_program, "projection");
 
-    s->ambient_loc = glGetUniformLocation(shader_program, "material.ambient");
-    s->diffuse_loc = glGetUniformLocation(shader_program, "material.diffuse");
+    //s->ambient_loc = glGetUniformLocation(shader_program, "material.ambient");
+    s->diffuse_tex_loc = glGetUniformLocation(shader_program, "material.diffuse");
     s->specular_loc = glGetUniformLocation(shader_program, "material.specular");
     s->shininess_loc = glGetUniformLocation(shader_program, "material.shininess");
 
@@ -183,7 +183,7 @@ TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program) {
 
     s->view_pos_loc = glGetUniformLocation(shader_program, "view_position");
 
-    s->texture1_loc = glGetUniformLocation(shader_program, "texture1");
+    //s->texture1_loc = glGetUniformLocation(shader_program, "texture1");
 
     return s;
 }
@@ -197,8 +197,8 @@ void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object
 
     TexturedPhongMaterial *material = (TexturedPhongMaterial *)object->material;
 
-    glUniform3fv(shader->ambient_loc, 1, (float *)material->ambient);
-    glUniform3fv(shader->diffuse_loc, 1, (float *)material->diffuse);
+    //glUniform3fv(shader->ambient_loc, 1, (float *)material->ambient);
+    //glUniform3fv(shader->diffuse_loc, 1, (float *)material->diffuse);
     glUniform3fv(shader->specular_loc, 1, (float *)material->specular);
     glUniform1f(shader->shininess_loc, material->shininess);
 
@@ -209,9 +209,9 @@ void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object
 
     glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
 
-    // Set texture1 to correspond to texture unit 0
-    glUniform1i(shader->texture1_loc, 0);
+    // Set texture to correspond to texture unit 0
+    glUniform1i(shader->diffuse_tex_loc, 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, material->texture1);
+    glBindTexture(GL_TEXTURE_2D, material->diffuse_tex);
 }
 

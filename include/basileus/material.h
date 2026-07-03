@@ -11,19 +11,17 @@ typedef struct {
 } PhongMaterial;
 
 typedef struct {
-    vec3 ambient, diffuse, specular;
+    unsigned int diffuse_tex;
+    vec3 specular;
     float shininess;
-
-    unsigned int texture1;
 } TexturedPhongMaterial;
 
 
 PhongMaterial *create_phong_material(vec3 ambient, vec3 diffuse, vec3 specular,
                                      float shininess);
 
-TexturedPhongMaterial *create_textured_phong_material(vec3 ambient, vec3 diffuse,
-                                             vec3 specular, float shininess,
-                                             unsigned int texture1);
+TexturedPhongMaterial *create_textured_phong_material(unsigned int diffuse_tex,
+                                             vec3 specular, float shininess);
 
 #endif
 
