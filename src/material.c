@@ -18,3 +18,19 @@ PhongMaterial *create_phong_material(vec3 ambient, vec3 diffuse, vec3 specular,
     return m;
 }
 
+TexturedPhongMaterial *create_textured_phong_material(vec3 ambient, vec3 diffuse,
+                                                      vec3 specular,
+                                                      float shininess,
+                                                      unsigned int texture1) {
+    TexturedPhongMaterial *m = malloc(sizeof(TexturedPhongMaterial));
+
+    glm_vec3_copy(ambient, m->ambient); 
+    glm_vec3_copy(diffuse, m->diffuse); 
+    glm_vec3_copy(specular, m->specular); 
+    m->shininess = shininess;
+
+    m->texture1 = texture1;
+
+    return m;
+}
+

@@ -63,6 +63,9 @@ typedef struct {
     GLint light_pos_loc;
 
     GLint view_pos_loc;
+
+    // Textures
+    GLint texture1_loc;
 } TexturedPhongShader;
 
 
@@ -79,6 +82,10 @@ void upload_simple_uniforms(RenderContext *context, RenderObject *object);
 PhongShader *create_phong_shader(unsigned int shader_program);
 
 void upload_phong_uniforms(RenderContext *context, RenderObject *object);
+
+TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program);
+
+void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object);
 
 #endif
 

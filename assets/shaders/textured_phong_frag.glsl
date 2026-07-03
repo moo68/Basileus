@@ -20,7 +20,7 @@ uniform Material material;
 uniform Light light;
 uniform vec3 view_position;
 
-uniform sampler2D the_texture;
+uniform sampler2D texture1;
 
 in vec3 normal_vec;
 in vec3 frag_pos;
@@ -42,6 +42,6 @@ void main() {
     vec3 specular = light.specular * (spec * material.specular);
 
     vec3 result = (ambient + diffuse + specular);
-    frag_color = vec4(result, 1.0) * texture(the_texture, tex_coord);
+    frag_color = vec4(result, 1.0) * texture(texture1, tex_coord);
 }
 

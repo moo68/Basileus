@@ -56,7 +56,7 @@ int main(void) {
  
     PhongShader *phong_shader = create_phong_shader(phong_shader_program);
     SimpleShader *light_source_shader = create_simple_shader(light_source_shader_program);
-    PhongShader *textured_phong_shader = create_phong_shader(textured_phong_shader_program);
+    TexturedPhongShader *textured_phong_shader = create_textured_phong_shader(textured_phong_shader_program);
 
     // Meshes and Buffers
     Cube cube = generate_cube();
@@ -79,8 +79,7 @@ int main(void) {
     upload_mesh(&tex_cube_mesh, &textured_layout);
 
     // Textures 
-    unsigned int texture = load_texture("assets/textures/container2.png"); 
-    glBindTexture(GL_TEXTURE_2D, texture);
+    unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
 
     // Render context 
     Camera camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
@@ -106,7 +105,8 @@ int main(void) {
     float shininess = 32.0f;
     PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
 
-    //TexturedPhongMaterial *tex_phong_mat = create_textured_phong_material();
+    TexturedPhongMaterial *textured_phong_mat =
+        create_textured_phong_material(ambient, diffuse, specular, shininess, texture);
  
     // Transforms
     Transform object_transform = create_transform();
@@ -117,12 +117,12 @@ int main(void) {
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     // RenderObjects
-    RenderObject phong_cube = {
+    /*RenderObject phong_cube = {
         .mesh = &cube_mesh,
         .transform = object_transform,
         .shader = (Shader *)phong_shader,
         .material = phong_mat
-    };
+    };*/
  
     RenderObject light_cube = {
         .mesh = &cube_mesh,
@@ -131,14 +131,14 @@ int main(void) {
         .material = NULL
     };
 
-    /*RenderObject tex_phong_cube = {
+    RenderObject tex_phong_cube = {
         .mesh = &tex_cube_mesh,
         .transform = object_transform,
         .shader = (Shader *)textured_phong_shader,
-        .material = phong_mat
-    };*/
+        .material = textured_phong_mat
+    };
 
-    RenderObject render_objects[2] = {phong_cube, light_cube, /*tex_phong_cube*/};
+    RenderObject render_objects[2] = {/*phong_cube,*/ light_cube, tex_phong_cube};
     int num_render_objects = 2;
     
     // Render Loop

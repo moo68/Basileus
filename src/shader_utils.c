@@ -161,3 +161,57 @@ void upload_phong_uniforms(RenderContext *context, RenderObject *object) {
     glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
 }
 
+TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program) {
+    TexturedPhongShader *s = malloc(sizeof(TexturedPhongShader));
+
+    s->base.shader_program = shader_program;
+    s->base.upload_uniforms = upload_textured_phong_uniforms;
+
+    s->model_loc = glGetUniformLocation(shader_program, "model");
+    s->view_loc = glGetUniformLocation(shader_program, "view");
+    s->projection_loc = glGetUniformLocation(shader_program, "projection");
+
+    s->ambient_loc = glGetUniformLocation(shader_program, "material.ambient");
+    s->diffuse_loc = glGetUniformLocation(shader_program, "material.diffuse");
+    s->specular_loc = glGetUniformLocation(shader_program, "material.specular");
+    s->shininess_loc = glGetUniformLocation(shader_program, "material.shininess");
+
+    s->ambient_light_loc = glGetUniformLocation(shader_program, "light.ambient");
+    s->diffuse_light_loc = glGetUniformLocation(shader_program, "light.diffuse");
+    s->specular_light_loc = glGetUniformLocation(shader_program, "light.specular");
+    s->light_pos_loc = glGetUniformLocation(shader_program, "light.position");
+
+    s->view_pos_loc = glGetUniformLocation(shader_program, "view_position");
+
+    s->texture1_loc = glGetUniformLocation(shader_program, "texture1");
+
+    return s;
+}
+
+void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object) {
+    TexturedPhongShader *shader = (TexturedPhongShader *)object->shader;
+
+    glUniformMatrix4fv(shader->view_loc, 1, GL_FALSE, (float *)context->camera.view);
+    glUniformMatrix4fv(shader->projection_loc, 1, GL_FALSE, (float *)context->projection);
+    glUniformMatrix4fv(shader->model_loc, 1, GL_FALSE, (float *)object->transform.model);
+
+    TexturedPhongMaterial *material = (TexturedPhongMaterial *)object->material;
+
+    glUniform3fv(shader->ambient_loc, 1, (float *)material->ambient);
+    glUniform3fv(shader->diffuse_loc, 1, (float *)material->diffuse);
+    glUniform3fv(shader->specular_loc, 1, (float *)material->specular);
+    glUniform1f(shader->shininess_loc, material->shininess);
+
+    glUniform3fv(shader->ambient_light_loc, 1, (float *)context->light.ambient);
+    glUniform3fv(shader->specular_light_loc, 1, (float *)context->light.specular);
+    glUniform3fv(shader->diffuse_light_loc, 1, (float *)context->light.diffuse);
+    glUniform3fv(shader->light_pos_loc, 1, (float *)context->light.position);
+
+    glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
+
+    // Set texture1 to correspond to texture unit 0
+    glUniform1i(shader->texture1_loc, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, material->texture1);
+}
+
