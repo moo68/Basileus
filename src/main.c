@@ -79,7 +79,7 @@ int main(void) {
     upload_mesh(&tex_cube_mesh, &textured_layout);
 
     // Textures 
-    unsigned int texture = load_texture("assets/textures/bricks.jpg"); 
+    unsigned int texture = load_texture("assets/textures/container2.png"); 
 
     // Render context 
     Camera camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);

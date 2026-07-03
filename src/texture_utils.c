@@ -14,10 +14,24 @@ unsigned int load_texture(char *file_path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load(file_path, &width, &height, &nrChannels, 0);
+    int width, height, num_channels;
+    unsigned char *data = stbi_load(file_path, &width, &height, &num_channels, 0);
+
+    // Assign the correct image format type based on number of image channels
+    GLenum format;
+    if (num_channels == 3) {
+        format = GL_RGB;
+    }
+    else if (num_channels == 4) {
+        format = GL_RGBA;
+    }
+    else {
+        format = GL_RED;
+    }
+
+    // Actually create the texture that OpenGL can read
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else {
