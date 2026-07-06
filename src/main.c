@@ -94,10 +94,9 @@ int main(void) {
     vec3 light_pos, light_amb, light_diff, light_spec, light_dir;
     glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
     glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, light_amb);
-    glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, light_diff);
+    glm_vec3_copy((vec3){0.8f, 0.8f, 0.8f}, light_diff);
     glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light_spec);
     glm_vec3_copy((vec3){-0.2f, -1.0f, -0.3f}, light_dir);
-    //render_context.light = create_light(light_pos, light_amb, light_diff, light_spec, light_dir);
     render_context.directional_light = 
         create_directional_light(light_dir, light_amb, light_diff, light_spec);
 
@@ -116,9 +115,9 @@ int main(void) {
     Transform object_transform = create_transform();
     translate_transform(&object_transform, (vec3){0.0f, 0.0f, 0.0f});
 
-    /*Transform light_transform = create_transform();
-    translate_transform(&light_transform, render_context.light.position);
-    scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});*/
+    Transform light_transform = create_transform();
+    translate_transform(&light_transform, (vec3){0.0f, 0.0f, 0.0f});
+    scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     // RenderObjects
     /*RenderObject phong_cube = {
@@ -128,20 +127,6 @@ int main(void) {
         .material = phong_mat
     };*/
  
-    /*RenderObject light_cube = {
-        .mesh = &cube_mesh,
-        .transform = light_transform,
-        .shader = (Shader *)light_source_shader,
-        .material = NULL
-    };*/
-
-    /*RenderObject tex_phong_cube = {
-        .mesh = &tex_cube_mesh,
-        .transform = object_transform,
-        .shader = (Shader *)textured_phong_shader,
-        .material = textured_phong_mat
-    };*/
-
     vec3 cube_positions[] = {
         { 0.0f,  0.0f,  0.0f},
         { 2.0f,  5.0f, -15.0f},
@@ -155,23 +140,47 @@ int main(void) {
         {-1.3f,  1.0f, -1.5f}
     };
 
-    RenderObject render_objects[10];
-    int num_render_objects = 10;
+    vec3 point_light_positions[] = {
+	    { 0.7f,  0.2f,  2.0f},
+    	{ 2.3f, -3.3f, -4.0f},
+	    {-4.0f,  2.0f, -12.0f},
+    	{ 0.0f,  0.0f, -3.0f}
+    };
+
+    render_context.num_point_lights = 4;
+    for (int i = 0; i < render_context.num_point_lights; i++) {
+        PointLight pl = create_point_light(point_light_positions[i], ambient,
+                                           specular, diffuse, 1.0f, 0.22f,
+                                           0.20f);
+        render_context.point_lights[i] = pl;
+    }
+
+    RenderObject render_objects[14];
+    int num_render_objects = 14;
 
     for (int i = 0; i < 10; i++) {
         translate_transform(&object_transform, cube_positions[i]);
         rotate_transform(&object_transform, (vec3){1.0f, 0.5f, 0.0f}, i * 20);
-        RenderObject ro = {
+        RenderObject crate = {
             .mesh = &tex_cube_mesh,
             .transform = object_transform,
             .shader = (Shader *)textured_phong_shader,
             .material = textured_phong_mat
         };
-        render_objects[i] = ro;
+        render_objects[i] = crate;
     }
 
-    //render_objects[10] = light_cube;
-    
+    for (int i = 10; i < 14; i++) {
+        translate_transform(&light_transform, point_light_positions[i - 10]);
+        RenderObject light = {
+            .mesh = &cube_mesh,
+            .transform = light_transform,
+            .shader = (Shader *)light_source_shader,
+            .material = NULL
+        };
+        render_objects[i] = light;
+    }
+ 
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
         float current_frame = (float)(glfwGetTime());
@@ -198,9 +207,9 @@ int main(void) {
         }
 
         // "sunrise" and "sunset"
-        /*float angle = glfwGetTime() * 0.5;
+        float angle = glfwGetTime() * 0.5;
         render_context.directional_light.direction[0] = cos(angle);
-        render_context.directional_light.direction[1] = sin(angle);*/
+        render_context.directional_light.direction[1] = sin(angle);
         //printf("X: %f Y: %f\n", render_context.directional_light.direction[0], render_context.directional_light.direction[1]);
 
         glBindVertexArray(0);

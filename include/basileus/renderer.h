@@ -15,7 +15,9 @@ typedef struct Shader Shader;
 
 typedef struct RenderContext {
     DirectionalLight directional_light;
+
     PointLight point_lights[MAX_POINT_LIGHTS];
+    int num_point_lights;
 
     Camera camera;
     mat4 projection;

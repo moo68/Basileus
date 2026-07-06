@@ -179,8 +179,9 @@ TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program) {
     s->ambient_light_loc = glGetUniformLocation(shader_program, "dir_light.ambient");
     s->diffuse_light_loc = glGetUniformLocation(shader_program, "dir_light.diffuse");
     s->specular_light_loc = glGetUniformLocation(shader_program, "dir_light.specular");
-    //s->light_pos_loc = glGetUniformLocation(shader_program, "light.position");
     s->light_dir_loc = glGetUniformLocation(shader_program, "dir_light.direction");
+
+    s->num_point_lights_loc = glGetUniformLocation(shader_program, "num_point_lights");
 
     s->view_pos_loc = glGetUniformLocation(shader_program, "view_position");
 
@@ -201,8 +202,43 @@ void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object
     glUniform3fv(shader->ambient_light_loc, 1, (float *)context->directional_light.ambient);
     glUniform3fv(shader->specular_light_loc, 1, (float *)context->directional_light.specular);
     glUniform3fv(shader->diffuse_light_loc, 1, (float *)context->directional_light.diffuse);
-    //glUniform3fv(shader->light_pos_loc, 1, (float *)context->light.position);
     glUniform3fv(shader->light_dir_loc, 1, (float *)context->directional_light.direction);
+
+    // Set point light values. Note that this gets the location and sets its
+    // value every frame; uniform locations here aren't being cached. Because 
+    // of that (among other things) this is nasty and should be replaced by UBOs.
+    glUniform1i(shader->num_point_lights_loc, context->num_point_lights);
+
+    char uniform_name[32];
+    for (int i = 0; i < context->num_point_lights; i++) {
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].position", i);
+        GLint position_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform3fv(position_loc, 1, (float *)context->point_lights[i].position);
+
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].ambient", i);
+        GLint ambient_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform3fv(ambient_loc, 1, (float *)context->point_lights[i].ambient);
+
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].diffuse", i);
+        GLint diffuse_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform3fv(diffuse_loc, 1, (float *)context->point_lights[i].diffuse);
+
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].specular", i);
+        GLint specular_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform3fv(specular_loc, 1, (float *)context->point_lights[i].specular);
+
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].constant", i);
+        GLint constant_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform1f(constant_loc, context->point_lights[i].constant);
+
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].linear", i);
+        GLint linear_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform1f(linear_loc, context->point_lights[i].linear);
+
+        snprintf(uniform_name, sizeof(uniform_name), "point_lights[%d].quadratic", i);
+        GLint quadratic_loc = glGetUniformLocation(shader->base.shader_program, uniform_name);
+        glUniform1f(quadratic_loc, context->point_lights[i].quadratic);
+    }
 
     glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
 

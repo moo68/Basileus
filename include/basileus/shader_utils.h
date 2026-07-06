@@ -28,13 +28,13 @@ typedef struct {
     GLint view_loc;
     GLint projection_loc;
 
-    // Phong material attributes.
+    // Phong material attributes
     GLint ambient_loc;
     GLint diffuse_loc;
     GLint specular_loc;
     GLint shininess_loc;
 
-    // Phong light attributes.
+    // Phong light attributes
     GLint ambient_light_loc;
     GLint diffuse_light_loc;
     GLint specular_light_loc;
@@ -50,17 +50,19 @@ typedef struct {
     GLint view_loc;
     GLint projection_loc;
 
-    // Phong material attributes.
+    // Phong material attributes
     GLint diffuse_tex_loc;
     GLint specular_tex_loc;
     GLint shininess_loc;
 
-    // Phong light attributes.
+    // Directional light attributes
     GLint ambient_light_loc;
     GLint diffuse_light_loc;
     GLint specular_light_loc;
-    //GLint light_pos_loc;
     GLint light_dir_loc;
+
+    // Point light attributes
+    GLint num_point_lights_loc;
 
     GLint view_pos_loc;
 } TexturedPhongShader;
