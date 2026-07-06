@@ -12,10 +12,11 @@
 typedef struct Shader Shader;
 
 typedef struct RenderContext {
+    DirectionalLight directional_light;
+    PointLight point_lights[32];
+
     Camera camera;
     mat4 projection;
-
-    Light light;
 
     float delta_time;
     float last_frame; 

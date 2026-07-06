@@ -80,6 +80,7 @@ int main(void) {
 
     // Textures 
     unsigned int texture = load_texture("assets/textures/container2.png"); 
+    unsigned int specular_map = load_texture("assets/textures/container2_specular.png"); 
 
     // Render context 
     Camera camera = create_camera(0.0f, 0.0f, 3.0f, 45.0f, 0.1f);
@@ -90,12 +91,15 @@ int main(void) {
                 0.1f, 100.0f, render_context.projection);
  
     // TODO: Lights should store a Transform for their position, not their own separate vec3?
-    vec3 light_pos, light_amb, light_diff, light_spec;
+    vec3 light_pos, light_amb, light_diff, light_spec, light_dir;
     glm_vec3_copy((vec3){3.0f, 1.0f, -3.0f}, light_pos);
     glm_vec3_copy((vec3){0.2f, 0.2f, 0.2f}, light_amb);
     glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, light_diff);
     glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, light_spec);
-    render_context.light = create_light(light_pos, light_amb, light_diff, light_spec);
+    glm_vec3_copy((vec3){-0.2f, -1.0f, -0.3f}, light_dir);
+    //render_context.light = create_light(light_pos, light_amb, light_diff, light_spec, light_dir);
+    render_context.directional_light = 
+        create_directional_light(light_dir, light_amb, light_diff, light_spec);
 
     // Materials
     vec3 ambient, diffuse, specular;
@@ -106,15 +110,15 @@ int main(void) {
     PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
 
     TexturedPhongMaterial *textured_phong_mat =
-        create_textured_phong_material(texture, specular, shininess);
+        create_textured_phong_material(texture, specular_map, shininess);
  
     // Transforms
     Transform object_transform = create_transform();
-    translate_transform(&object_transform, (vec3){-1.0f, 0.0f, 0.0f});
+    translate_transform(&object_transform, (vec3){0.0f, 0.0f, 0.0f});
 
-    Transform light_transform = create_transform();
+    /*Transform light_transform = create_transform();
     translate_transform(&light_transform, render_context.light.position);
-    scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
+    scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});*/
 
     // RenderObjects
     /*RenderObject phong_cube = {
@@ -124,22 +128,49 @@ int main(void) {
         .material = phong_mat
     };*/
  
-    RenderObject light_cube = {
+    /*RenderObject light_cube = {
         .mesh = &cube_mesh,
         .transform = light_transform,
         .shader = (Shader *)light_source_shader,
         .material = NULL
-    };
+    };*/
 
-    RenderObject tex_phong_cube = {
+    /*RenderObject tex_phong_cube = {
         .mesh = &tex_cube_mesh,
         .transform = object_transform,
         .shader = (Shader *)textured_phong_shader,
         .material = textured_phong_mat
+    };*/
+
+    vec3 cube_positions[] = {
+        { 0.0f,  0.0f,  0.0f},
+        { 2.0f,  5.0f, -15.0f},
+        {-1.5f, -2.2f, -2.5f},
+        {-3.8f, -2.0f, -12.3f},
+        { 2.4f, -0.4f, -3.5f},
+        {-1.7f,  3.0f, -7.5f},
+        { 1.3f, -2.0f, -2.5f},
+        { 1.5f,  2.0f, -2.5f},
+        { 1.5f,  0.2f, -1.5f},
+        {-1.3f,  1.0f, -1.5f}
     };
 
-    RenderObject render_objects[2] = {/*phong_cube,*/ light_cube, tex_phong_cube};
-    int num_render_objects = 2;
+    RenderObject render_objects[10];
+    int num_render_objects = 10;
+
+    for (int i = 0; i < 10; i++) {
+        translate_transform(&object_transform, cube_positions[i]);
+        rotate_transform(&object_transform, (vec3){1.0f, 0.5f, 0.0f}, i * 20);
+        RenderObject ro = {
+            .mesh = &tex_cube_mesh,
+            .transform = object_transform,
+            .shader = (Shader *)textured_phong_shader,
+            .material = textured_phong_mat
+        };
+        render_objects[i] = ro;
+    }
+
+    //render_objects[10] = light_cube;
     
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
