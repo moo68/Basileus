@@ -293,7 +293,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 void process_input(GLFWwindow *window) {
     (void)window;
 
-    const float speed = 2.5f * render_context.delta_time; 
+    float speed = 2.5f * render_context.delta_time; 
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        speed = 12.5f * render_context.delta_time;
+    }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         move_camera_forward(&(render_context.camera), speed);
