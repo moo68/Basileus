@@ -1,6 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#define MAX_POINT_LIGHTS (32)
+
 #include <cglm/cglm.h>
 
 #include "basileus/camera.h"
@@ -13,7 +15,7 @@ typedef struct Shader Shader;
 
 typedef struct RenderContext {
     DirectionalLight directional_light;
-    PointLight point_lights[32];
+    PointLight point_lights[MAX_POINT_LIGHTS];
 
     Camera camera;
     mat4 projection;

@@ -4,11 +4,7 @@
 #include <cglm/cglm.h>
 
 
-typedef struct {
-    vec3 position, direction;
-    vec3 ambient, specular, diffuse;
-} Light;
-
+// TODO: Swap order of specular and diffuse
 typedef struct {
     vec3 direction;
 
@@ -23,10 +19,12 @@ typedef struct {
     vec3 ambient;
     vec3 specular;
     vec3 diffuse;
+
+    float constant;
+    float linear;
+    float quadratic;
 } PointLight;
 
-
-Light create_light(vec3 position, vec3 ambient, vec3 specular, vec3 diffuse, vec3 direction);
 
 DirectionalLight create_directional_light(vec3 direction, vec3 ambient,
                                          vec3 specular, vec3 diffuse);

@@ -197,6 +197,12 @@ int main(void) {
             glDrawElements(GL_TRIANGLES, curr_object.mesh->index_count, GL_UNSIGNED_INT, 0);
         }
 
+        // "sunrise" and "sunset"
+        /*float angle = glfwGetTime() * 0.5;
+        render_context.directional_light.direction[0] = cos(angle);
+        render_context.directional_light.direction[1] = sin(angle);*/
+        //printf("X: %f Y: %f\n", render_context.directional_light.direction[0], render_context.directional_light.direction[1]);
+
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
