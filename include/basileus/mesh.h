@@ -38,5 +38,6 @@ VertexLayout create_vertex_layout(VertexAttribute *attributes,
 
 void cleanup_mesh(Mesh *m);
 
+
 #endif
 

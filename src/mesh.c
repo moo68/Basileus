@@ -1,8 +1,12 @@
 #include "basileus/mesh.h"
 
 #include <stdlib.h>
+#define CGLTF_IMPLEMENTATION
+#include <cgltf.h>
 
 #include <glad/gl.h>
+
+#include <stdbool.h>
 
 
 Mesh create_mesh(float *vert, size_t vert_count, unsigned int *ind, 
@@ -75,4 +79,6 @@ void cleanup_mesh(Mesh *m) {
     glDeleteBuffers(1, &m->vbo);
     glDeleteBuffers(1, &m->ebo);
 }
+
+
 

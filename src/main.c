@@ -47,14 +47,14 @@ int main(void) {
     // Shaders
     /*unsigned int textured_shader_program = create_shader_program("assets/shaders/textured_vert.glsl",
             "assets/shaders/textured_frag.glsl");*/
-    unsigned int phong_shader_program = create_shader_program("assets/shaders/phong_vert.glsl",
-            "assets/shaders/phong_frag.glsl");
+    /*unsigned int phong_shader_program = create_shader_program("assets/shaders/phong_vert.glsl",
+            "assets/shaders/phong_frag.glsl");*/
     unsigned int light_source_shader_program = create_shader_program("assets/shaders/light_source_vert.glsl",
             "assets/shaders/light_source_frag.glsl");
     unsigned int textured_phong_shader_program = create_shader_program("assets/shaders/textured_phong_vert.glsl",
             "assets/shaders/textured_phong_frag.glsl");
  
-    PhongShader *phong_shader = create_phong_shader(phong_shader_program);
+    //PhongShader *phong_shader = create_phong_shader(phong_shader_program);
     SimpleShader *light_source_shader = create_simple_shader(light_source_shader_program);
     TexturedPhongShader *textured_phong_shader = create_textured_phong_shader(textured_phong_shader_program);
 
@@ -106,7 +106,7 @@ int main(void) {
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, diffuse); 
     glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, specular); 
     float shininess = 32.0f;
-    PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
+    //PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
 
     TexturedPhongMaterial *textured_phong_mat =
         create_textured_phong_material(texture, specular_map, shininess);
@@ -210,7 +210,6 @@ int main(void) {
         float angle = glfwGetTime() * 0.5;
         render_context.directional_light.direction[0] = cos(angle);
         render_context.directional_light.direction[1] = sin(angle);
-        //printf("X: %f Y: %f\n", render_context.directional_light.direction[0], render_context.directional_light.direction[1]);
 
         glBindVertexArray(0);
 
