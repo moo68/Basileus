@@ -33,7 +33,6 @@ void upload_mesh(Mesh *m, VertexLayout *layout) {
         VertexAttribute attribute = layout->attributes[i];
         vertex_length += attribute.size;
     }
-    printf("vertex_length: %d\n", vertex_length);
     
     glBindVertexArray(m->vao);
     glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
@@ -42,12 +41,6 @@ void upload_mesh(Mesh *m, VertexLayout *layout) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m->indices[0]) * m->index_count, 
             m->indices, GL_STATIC_DRAW);
-
-    /*unsigned int vertex_length = 0;
-    for (int i = 0; i < (int)layout->attribute_count; i++) {
-        VertexAttribute attribute = layout->attributes[i];
-        vertex_length += attribute.size;
-    }*/
 
     unsigned int offset = 0;
     for (int i = 0; i < (int)layout->attribute_count; i++) {
@@ -226,28 +219,11 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
         attribute_index++;
     }
 
-    VertexLayout vertex_layout = create_vertex_layout(vertex_attributes, attribute_count);
+    VertexLayout vertex_layout = create_vertex_layout(vertex_attributes, attribute_index);
 
     // Fill out the actual Mesh struct
     mesh = create_mesh(vertices, (size_t)vertex_count, indices, (size_t)index_count);
     upload_mesh(&mesh, &vertex_layout);
-
-    // DEBUG STUFF--DELETE LATER!
-    /*printf("vertex_count: %d\n", (int)vertex_count);
-    printf("index_count: %d\n", (int)index_count);
-    printf("vertex_size: %d\n\n", (int)vertex_size);
-
-    printf("First 10 vertices:\n");
-    for (int i = 0; i < 80; i++) {
-        printf("%.2f ", vertices[i]);
-    }
-    printf("\n");
-
-    printf("First 80 indices:\n");
-    for (int i = 0; i < 80; i++) {
-        printf("%d ", indices[i]);
-    }
-    printf("\n\n");*/
 
     // Cleanup and return
     free(vertex_attributes);

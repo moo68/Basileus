@@ -55,37 +55,14 @@ int main(void) {
             "assets/shaders/textured_phong_frag.glsl");
  
     //PhongShader *phong_shader = create_phong_shader(phong_shader_program);
-    SimpleShader *light_source_shader = create_simple_shader(light_source_shader_program);
+    //SimpleShader *light_source_shader = create_simple_shader(light_source_shader_program);
     TexturedPhongShader *textured_phong_shader = create_textured_phong_shader(textured_phong_shader_program);
 
     // Meshes and Buffers
-    /*Cube cube = generate_cube();
-    Mesh cube_mesh = create_mesh(cube.vertices, 144, cube.indices, 36);
-
-    VertexAttribute position = create_vertex_attribute(0, 3);
-    VertexAttribute normal = create_vertex_attribute(1, 3);
-    VertexAttribute pos_attributes[] = {position, normal};
-    VertexLayout vertex_pos_layout = create_vertex_layout(pos_attributes, 2); 
-
-    upload_mesh(&cube_mesh, &vertex_pos_layout);
-
-    TexturedCube tex_cube = generate_textured_cube();
-    Mesh tex_cube_mesh = create_mesh(tex_cube.vertices, 192, tex_cube.indices, 36);
-
-    VertexAttribute uv_coord = create_vertex_attribute(2, 2);
-    VertexAttribute textured_attributes[] = {position, normal, uv_coord};
-    VertexLayout textured_layout = create_vertex_layout(textured_attributes, 3);
-
-    upload_mesh(&tex_cube_mesh, &textured_layout);*/
-
-
-    int mesh_count = 0;
-    Mesh *meshes = load_gltf_file("assets/models/duck/Duck.gltf", &mesh_count);
-    if (meshes) {
-        printf("load_gltf_file successfully returned!\n");
-        printf("Number of meshes: %d\n", mesh_count);
-    }
-
+    int duck_mesh_count = 0;
+    Mesh *duck_meshes = load_gltf_file("assets/models/duck/Duck.gltf", &duck_mesh_count);
+    int cube_mesh_count = 0;
+    Mesh *cube_meshes = load_gltf_file("assets/models/cube/Cube.gltf", &cube_mesh_count);
 
     // Textures 
     unsigned int texture = load_texture("assets/textures/container2.png"); 
@@ -122,7 +99,7 @@ int main(void) {
  
     // Transforms
     Transform object_transform = create_transform();
-    translate_transform(&object_transform, (vec3){0.0f, 0.0f, 0.0f});
+    translate_transform(&object_transform, (vec3){3.0f, 0.0f, -3.0f});
 
     Transform light_transform = create_transform();
     translate_transform(&light_transform, (vec3){0.0f, 0.0f, 0.0f});
@@ -131,14 +108,7 @@ int main(void) {
     Transform duck_transform = create_transform();
     scale_transform(&duck_transform, (vec3){0.01f, 0.01f, 0.01f});
 
-    // RenderObjects
-    /*RenderObject phong_cube = {
-        .mesh = &cube_mesh,
-        .transform = object_transform,
-        .shader = (Shader *)phong_shader,
-        .material = phong_mat
-    };*/
- 
+    // RenderObjects 
     /*vec3 cube_positions[] = {
         { 0.0f,  0.0f,  0.0f},
         { 2.0f,  5.0f, -15.0f},
@@ -193,16 +163,24 @@ int main(void) {
         render_objects[i] = light;
     }*/
 
-    RenderObject render_objects[1];
-    int num_render_objects = 1;
+    RenderObject render_objects[2];
+    int num_render_objects = 2;
 
     RenderObject duck = {
-        .mesh = &meshes[0],
+        .mesh = &duck_meshes[0],
         .transform = duck_transform,
         .shader = (Shader *)textured_phong_shader,
         .material = textured_phong_mat
     };
     render_objects[0] = duck;
+
+    RenderObject cube = {
+        .mesh = &cube_meshes[0],
+        .transform = object_transform,
+        .shader = (Shader *)textured_phong_shader,
+        .material = textured_phong_mat
+    };
+    render_objects[1] = cube;
  
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
@@ -241,8 +219,8 @@ int main(void) {
     }
 
     // Shutdown cleanup
-    //cleanup_mesh(&cube_mesh);
-    //glDeleteProgram(shader_program);
+    cleanup_mesh(&duck_meshes[0]);
+    cleanup_mesh(&cube_meshes[0]);
     glDeleteProgram(light_source_shader_program);
     glDeleteProgram(textured_phong_shader_program);
         
