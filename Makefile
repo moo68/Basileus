@@ -3,6 +3,7 @@ CFLAGS  := -Wall -Wextra -Iinclude
 
 SRC     := $(wildcard src/*.c)
 BIN     := build/$(notdir $(CURDIR))
+ASAN_BIN := build/$(notdir $(CURDIR))-asan
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -30,6 +31,12 @@ endif
 $(BIN): $(SRC)
 	@mkdir -p build
 	$(CC) $(CFLAGS) $^ -o $@ $(GLFW) $(OPENGL) $(CGLM) $(SYS_LIBS)
+
+.PHONY: asan
+asan: CFLAGS += -fsanitize=address -g -O0 -fno-omit-frame-pointer
+asan: $(SRC)
+	@mkdir -p build
+	$(CC) $(CFLAGS) $^ -o $(ASAN_BIN) $(GLFW) $(OPENGL) $(CGLM) $(SYS_LIBS)
 
 .PHONY: clean
 clean:
