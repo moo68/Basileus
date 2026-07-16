@@ -114,11 +114,11 @@ Mesh *load_gltf_file(const char *file_path, int *mesh_count) {
     Mesh *mesh_list = malloc(total_primitives * sizeof(Mesh));
     int mesh_index = 0;
 
-    for (int i = 0; i < data->meshes_count; i++) {
+    for (int i = 0; i < (int)data->meshes_count; i++) {
         cgltf_mesh *mesh = &data->meshes[i];
 
-        for (int j = 0; j < mesh->primitives_count; j++) {
-            cgltf_primitive *primitive = &mesh->primitives[i];
+        for (int j = 0; j < (int)mesh->primitives_count; j++) {
+            cgltf_primitive *primitive = &mesh->primitives[j];
 
             // Skip meshes that aren't made out of triangles
             if (primitive->type != cgltf_primitive_type_triangles) {
@@ -130,12 +130,14 @@ Mesh *load_gltf_file(const char *file_path, int *mesh_count) {
         }
     }
 
+    *mesh_count = mesh_index;
+
     cgltf_free(data);
     return mesh_list;
 }
 
 Mesh upload_primitive(const cgltf_primitive *primitive) {
-    Mesh *mesh = {0};
+    Mesh mesh = {0};
 
     float *positions = NULL;
     float *normals = NULL;
@@ -144,7 +146,7 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
     cgltf_size vertex_size = 0;
 
     // Get the vertex attributes in the given primitive
-    for (int i = 0; i < primitive->attributes_count; i++) {
+    for (int i = 0; i < (int)primitive->attributes_count; i++) {
         const cgltf_attribute *attribute = &primitive->attributes[i];
 
         if (attribute->type == cgltf_attribute_type_position) {
@@ -164,7 +166,7 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
     // Interleave each vertex attribute into a single array of vertex data
     float *vertices = malloc(vertex_count * vertex_size * sizeof(float));
 
-    for (int i = 0; i < vertex_count; i++) {
+    for (int i = 0; i < (int)vertex_count; i++) {
         float *curr_float = &vertices[i * vertex_size];
         int offset = 0;
 
@@ -189,8 +191,39 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
         indices = read_index_accessor(primitive->indices, &index_count);
     }
 
-    // Fill out the actual mesh struct
-    Mesh new_mesh = create_mesh(vertices, (size_t)vertex_count, indices, (size_t)index_count); 
+    // Create a proper VertexLayout struct
+    int attribute_count = 0;
+    if (positions) {
+        attribute_count++;
+    }
+    if (normals) {
+        attribute_count++;
+    }
+    if (tex_coords) {
+        attribute_count++;
+    }
+
+    int attribute_index = 0;
+    VertexAttribute *vertex_attributes = malloc(attribute_count * sizeof(VertexAttribute));
+
+    if (positions) {
+        vertex_attributes[attribute_index] = create_vertex_attribute(0, 3);
+        attribute_index++;
+    }
+    if (normals) {
+        vertex_attributes[attribute_index] = create_vertex_attribute(1, 3);
+        attribute_index++;
+    }
+    if (tex_coords) {
+        vertex_attributes[attribute_index] = create_vertex_attribute(2, 2);
+        attribute_index++;
+    }
+
+    VertexLayout vertex_layout = create_vertex_layout(vertex_attributes, attribute_count);
+
+    // Fill out the actual Mesh struct
+    mesh = create_mesh(vertices, (size_t)vertex_count, indices, (size_t)index_count);
+    upload_mesh(&mesh, &vertex_layout);
 
     // DEBUG STUFF--DELETE LATER!
     /*printf("vertex_count: %d\n", (int)vertex_count);
@@ -210,6 +243,8 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
     printf("\n\n");*/
 
     // Cleanup and return
+    free(vertex_attributes);
+
     if (positions) {
         free(positions);
     }
@@ -222,6 +257,8 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
 
     free(vertices);
     free(indices);
+
+    return mesh;
 }
 
 float *read_float_accessor(cgltf_accessor *accessor, cgltf_size *vertex_count,

@@ -81,6 +81,10 @@ int main(void) {
 
     int mesh_count = 0;
     Mesh *meshes = load_gltf_file("assets/models/duck/Duck.gltf", &mesh_count);
+    if (meshes) {
+        printf("load_gltf_file successfully returned!\n");
+        printf("Number of meshes: %d\n", mesh_count);
+    }
 
 
     // Textures 
@@ -124,6 +128,9 @@ int main(void) {
     translate_transform(&light_transform, (vec3){0.0f, 0.0f, 0.0f});
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
+    Transform duck_transform = create_transform();
+    scale_transform(&duck_transform, (vec3){0.1f, 0.1f, 0.1f});
+
     // RenderObjects
     /*RenderObject phong_cube = {
         .mesh = &cube_mesh,
@@ -132,7 +139,7 @@ int main(void) {
         .material = phong_mat
     };*/
  
-    vec3 cube_positions[] = {
+    /*vec3 cube_positions[] = {
         { 0.0f,  0.0f,  0.0f},
         { 2.0f,  5.0f, -15.0f},
         {-1.5f, -2.2f, -2.5f},
@@ -184,7 +191,18 @@ int main(void) {
             .material = NULL
         };
         render_objects[i] = light;
-    }
+    }*/
+
+    RenderObject render_objects[1];
+    int num_render_objects = 1;
+
+    RenderObject duck = {
+        .mesh = &meshes[0],
+        .transform = duck_transform,
+        .shader = (Shader *)textured_phong_shader,
+        .material = textured_phong_mat
+    };
+    render_objects[0] = duck;
  
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
