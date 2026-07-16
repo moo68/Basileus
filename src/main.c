@@ -59,7 +59,7 @@ int main(void) {
     TexturedPhongShader *textured_phong_shader = create_textured_phong_shader(textured_phong_shader_program);
 
     // Meshes and Buffers
-    Cube cube = generate_cube();
+    /*Cube cube = generate_cube();
     Mesh cube_mesh = create_mesh(cube.vertices, 144, cube.indices, 36);
 
     VertexAttribute position = create_vertex_attribute(0, 3);
@@ -76,7 +76,7 @@ int main(void) {
     VertexAttribute textured_attributes[] = {position, normal, uv_coord};
     VertexLayout textured_layout = create_vertex_layout(textured_attributes, 3);
 
-    upload_mesh(&tex_cube_mesh, &textured_layout);
+    upload_mesh(&tex_cube_mesh, &textured_layout);*/
 
 
     int mesh_count = 0;
@@ -129,7 +129,7 @@ int main(void) {
     scale_transform(&light_transform, (vec3){0.25f, 0.25f, 0.25f});
 
     Transform duck_transform = create_transform();
-    scale_transform(&duck_transform, (vec3){0.1f, 0.1f, 0.1f});
+    scale_transform(&duck_transform, (vec3){0.01f, 0.01f, 0.01f});
 
     // RenderObjects
     /*RenderObject phong_cube = {
@@ -241,7 +241,7 @@ int main(void) {
     }
 
     // Shutdown cleanup
-    cleanup_mesh(&cube_mesh);
+    //cleanup_mesh(&cube_mesh);
     //glDeleteProgram(shader_program);
     glDeleteProgram(light_source_shader_program);
     glDeleteProgram(textured_phong_shader_program);

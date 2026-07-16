@@ -27,20 +27,27 @@ void upload_mesh(Mesh *m, VertexLayout *layout) {
     glGenVertexArrays(1, &m->vao);
     glGenBuffers(1, &m->vbo);
     glGenBuffers(1, &m->ebo);
-    
-    glBindVertexArray(m->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(m->vertices[0]) * m->vertex_count, 
-            m->vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m->indices[0]) * m->index_count, 
-            m->indices, GL_STATIC_DRAW);
 
     unsigned int vertex_length = 0;
     for (int i = 0; i < (int)layout->attribute_count; i++) {
         VertexAttribute attribute = layout->attributes[i];
         vertex_length += attribute.size;
     }
+    printf("vertex_length: %d\n", vertex_length);
+    
+    glBindVertexArray(m->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(m->vertices[0]) * m->vertex_count * vertex_length, 
+            m->vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m->indices[0]) * m->index_count, 
+            m->indices, GL_STATIC_DRAW);
+
+    /*unsigned int vertex_length = 0;
+    for (int i = 0; i < (int)layout->attribute_count; i++) {
+        VertexAttribute attribute = layout->attributes[i];
+        vertex_length += attribute.size;
+    }*/
 
     unsigned int offset = 0;
     for (int i = 0; i < (int)layout->attribute_count; i++) {
