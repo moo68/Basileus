@@ -78,6 +78,11 @@ int main(void) {
 
     upload_mesh(&tex_cube_mesh, &textured_layout);
 
+
+    int mesh_count = 0;
+    Mesh *meshes = load_gltf_file("assets/models/duck/Duck.gltf", &mesh_count);
+
+
     // Textures 
     unsigned int texture = load_texture("assets/textures/container2.png"); 
     unsigned int specular_map = load_texture("assets/textures/container2_specular.png"); 

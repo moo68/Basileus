@@ -1,6 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include <cgltf.h>
+
 #include <stdlib.h>
 
 
@@ -38,6 +40,15 @@ VertexLayout create_vertex_layout(VertexAttribute *attributes,
 
 void cleanup_mesh(Mesh *m);
 
+Mesh *load_gltf_file(const char *file_path, int *mesh_count);
+
+Mesh upload_primitive(const cgltf_primitive *primtive);
+
+float *read_float_accessor(cgltf_accessor *accessor, cgltf_size *vertex_count,
+                           cgltf_size *vertex_size);
+
+unsigned int *read_index_accessor(cgltf_accessor *accessor,
+                                  cgltf_size *index_count);
 
 #endif
 
