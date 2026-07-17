@@ -6,6 +6,10 @@
 #include <cglm/cglm.h>
 #include <stb_image.h>
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_log.h>
+
 #include "basileus/mesh.h"
 #include "basileus/transform.h"
 #include "basileus/camera.h"
@@ -22,6 +26,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void process_input(GLFWwindow *window);
+
+SDL_Window *create_window();
+SDL_GLContext create_context(SDL_Window *window);
 
 
 RenderContext render_context = {0};
@@ -320,5 +327,73 @@ void process_input(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         move_camera_right(&(render_context.camera), speed);
     }
+}
+
+SDL_Window *create_window() {
+    // Initialize SDL3
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to initialize SDL3!");
+        return NULL;
+    }
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Initialized SDL3");
+
+    // Set OpenGL version and profile
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_CORE);
+
+    int gl_major_version = -1;
+    int gl_minor_version = -1;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &gl_major_version);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &gl_minor_version);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using OpenGL version %d.%d",
+                gl_major_version, gl_minor_version);
+
+    // Set other OpenGL attributes
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+    // Create the application's window
+    SDL_Window *window = SDL_CreateWindow("Caverns Test", 1200, 800,
+                                          SDL_WINDOW_OPENGL |
+                                          SDL_WINDOW_RESIZABLE);
+    if (!window) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create window!");
+        SDL_Quit();
+        return NULL;
+    }
+
+    return window;
+}
+
+SDL_GLContext create_context(SDL_Window *window) {
+    // Create the OpenGL context
+    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+    if (!gl_context) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
+                        "Failed to create OpenGL context!");
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return NULL;
+    }
+
+    // Load GLAD so OpenGL functions work properly
+    if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to initialize GLAD!");
+        SDL_GL_DestroyContext(gl_context);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return NULL;
+    }
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Initialized GLAD");
+
+    return gl_context;
 }
 

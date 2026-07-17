@@ -238,8 +238,11 @@ Mesh upload_primitive(const cgltf_primitive *primitive) {
         free(tex_coords);
     }
 
+    // TODO: Figure out something better than just setting vertex/index data NULL?
     free(vertices);
     free(indices);
+    mesh.vertices = NULL;
+    mesh.indices = NULL;
 
     return mesh;
 }
