@@ -1,4 +1,7 @@
 
+WARNING: Some of this is outdated and refers to GLFW instead of SDL3!!!
+
+
 A camera represents a kind of 1st person "viewport." It has these attributes:
 
     vec3 position;

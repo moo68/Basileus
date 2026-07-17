@@ -2,13 +2,13 @@
 #include <stdbool.h>
 
 #include <glad/gl.h>
-#include <GLFW/glfw3.h>
-#include <cglm/cglm.h>
-#include <stb_image.h>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_log.h>
+
+#include <cglm/cglm.h>
+#include <stb_image.h>
 
 #include "basileus/mesh.h"
 #include "basileus/transform.h"
@@ -21,35 +21,42 @@
 #include "basileus/light.h"
 
 
-GLFWwindow *create_window_and_context(const int width, const int height, const char *name);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void process_input(GLFWwindow *window);
-
 SDL_Window *create_window();
 SDL_GLContext create_context(SDL_Window *window);
+void key_callback(SDL_Event *event);
+void mouse_callback(SDL_Event *event);
+void process_input(void);
 
 
 RenderContext render_context = {0};
 
+// TODO: Store is_wireframe in the render context
 bool is_wireframe = false;
 
-bool first_mouse = true;
-float last_x =  1280.0f / 2.0;
-float last_y =  720.0 / 2.0;
+int main(int argc, char *argv[]) { 
+    (void)argv;
+    (void)argc;
 
+    // Initialize SDL and OpenGL, creating a window and context
+    SDL_Window *window = create_window();
+    if (!window) {
+        return -1;
+    }
 
-int main(void) { 
-    // Load GLFW and OpenGL
-    const int WINDOW_WIDTH = 1280;
-    const int WINDOW_HEIGHT = 720;
-    GLFWwindow *window = create_window_and_context(WINDOW_WIDTH, WINDOW_HEIGHT, "Basileus");
+    SDL_SetWindowRelativeMouseMode(window, true);
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetKeyCallback(window, key_callback); 
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    SDL_GLContext gl_context = create_context(window);
+    if (!gl_context) {
+        return -1;
+    }
+
+    // Set the initial OpenGL viewport
+    int window_width, window_height;
+    SDL_GetWindowSizeInPixels(window, &window_width, &window_height);
+    glViewport(0, 0, window_width, window_height);
+
+    // Turn on VSync
+    SDL_GL_SetSwapInterval(1);
 
     // Shaders
     /*unsigned int textured_shader_program = create_shader_program("assets/shaders/textured_vert.glsl",
@@ -80,7 +87,7 @@ int main(void) {
     render_context.camera = camera;
 
     glm_mat4_identity(render_context.projection);
-    glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 
+    glm_perspective(glm_rad(45.0f), (float)window_width / (float)window_height, 
                 0.1f, 100.0f, render_context.projection);
  
     // TODO: Lights should store a Transform for their position, not their own separate vec3?
@@ -190,12 +197,33 @@ int main(void) {
     render_objects[1] = cube;
  
     // Render Loop
-    while (!glfwWindowShouldClose(window)) {
-        float current_frame = (float)(glfwGetTime());
-        render_context.delta_time = current_frame - render_context.last_frame;
+    bool is_running = true;
+    SDL_Event event = {0};
+    render_context.last_frame = SDL_GetTicks();
+
+    while (is_running) {
+        uint64_t current_frame = SDL_GetTicks();
+        render_context.delta_time = (current_frame - render_context.last_frame) / 1000.0f;
         render_context.last_frame = current_frame;
 
-        process_input(window);
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_EVENT_QUIT:
+                    is_running = false;
+                    break;
+                case SDL_EVENT_WINDOW_RESIZED:
+                    glViewport(0, 0, event.window.data1, event.window.data2);
+                    break;
+                case SDL_EVENT_KEY_DOWN:
+                    key_callback(&event);
+                    break;
+                case SDL_EVENT_MOUSE_MOTION:
+                    mouse_callback(&event);
+                    break;
+            }
+        }
+
+        process_input();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -215,14 +243,18 @@ int main(void) {
         }
 
         // "sunrise" and "sunset"
-        float angle = glfwGetTime() * 0.5;
+        float angle = (SDL_GetTicks() / 1000.0f) * 0.5;
         render_context.directional_light.direction[0] = cos(angle);
         render_context.directional_light.direction[1] = sin(angle);
 
+        GLenum error;
+        while ((error = glGetError()) != GL_NO_ERROR) {
+            printf("OpenGL error: 0x%x\n", error);
+        }
+
         glBindVertexArray(0);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        SDL_GL_SwapWindow(window);
     }
 
     // Shutdown cleanup
@@ -230,105 +262,15 @@ int main(void) {
     cleanup_mesh(&cube_meshes[0]);
     glDeleteProgram(light_source_shader_program);
     glDeleteProgram(textured_phong_shader_program);
-        
-    glfwTerminate();
+
+    SDL_GL_DestroyContext(gl_context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
 
 
 // Function definitions
-GLFWwindow* create_window_and_context(const int width, const int height, const char *name) {
-    if (!glfwInit()) {
-        printf("ERROR: GLFW failed to initialize!\n");
-        return NULL;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
- 
-    GLFWwindow *window = glfwCreateWindow(width, height, name, NULL, NULL);
-    if (!window) {
-        fprintf(stderr, "ERROR: GLFW failed to create a window!\n");
-        glfwTerminate();
-        return NULL;
-    } 
-    glfwMakeContextCurrent(window);
- 
-    int version = gladLoadGL(glfwGetProcAddress);
-    if (version == 0) {
-        fprintf(stderr, "ERROR: GLAD failed to initialize!\n");
-        return NULL;
-    }
-    else {
-        fprintf(stdout, "INFO: Loaded OpenGL version %d.%d\n", GLAD_VERSION_MAJOR(version), 
-                GLAD_VERSION_MINOR(version));
-    }
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    
-    int fb_width, fb_height;
-    glfwGetFramebufferSize(window, &fb_width, &fb_height); 
-    glViewport(0, 0, fb_width, fb_height);
-
-    return window;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    (void)window;
-
-    glViewport(0, 0, width, height);
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    (void)scancode;
-    (void)mods;
-
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    } 
-    else if (!is_wireframe && key == GLFW_KEY_TAB && action == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
-        is_wireframe = true;
-    }
-    else if (is_wireframe && key == GLFW_KEY_TAB && action == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
-        is_wireframe = false;
-    }
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    (void)window; 
-
-    look_camera_around(&(render_context.camera), xpos, ypos, &last_x, &last_y, &first_mouse); 
-}
-
-void process_input(GLFWwindow *window) {
-    (void)window;
-
-    float speed = 2.5f * render_context.delta_time; 
-
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        speed = 12.5f * render_context.delta_time;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        move_camera_forward(&(render_context.camera), speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        move_camera_backward(&(render_context.camera), speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        move_camera_left(&(render_context.camera), speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        move_camera_right(&(render_context.camera), speed);
-    }
-}
-
 SDL_Window *create_window() {
     // Initialize SDL3
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -394,6 +336,53 @@ SDL_GLContext create_context(SDL_Window *window) {
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Initialized GLAD");
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
     return gl_context;
+}
+
+void key_callback(SDL_Event *event) {
+    // SDL fires KEY_DOWN repeatedly if key-repeat is on
+    if (event->key.repeat) return;
+
+    // TODO: actually implement this
+    /*if (event->key.key == SDLK_ESCAPE) {
+        is_running = false;
+    }*/
+    else if (!is_wireframe && event->key.key == SDLK_TAB) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        is_wireframe = true;
+    }
+    else if (is_wireframe && event->key.key == SDLK_TAB) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        is_wireframe = false;
+    }
+}
+
+void mouse_callback(SDL_Event *event) {
+    look_camera_around(&(render_context.camera), event->motion.xrel,
+                       event->motion.yrel);
+}
+
+void process_input(void) {
+    const bool *keystate = SDL_GetKeyboardState(NULL);
+
+    float speed = 2.5f * render_context.delta_time;
+    if (keystate[SDL_SCANCODE_LSHIFT]) {
+        speed = 12.5f * render_context.delta_time;
+    }
+    if (keystate[SDL_SCANCODE_W]) {
+        move_camera_forward(&(render_context.camera), speed);
+    }
+    if (keystate[SDL_SCANCODE_S]) {
+        move_camera_backward(&(render_context.camera), speed);
+    }
+    if (keystate[SDL_SCANCODE_A]) {
+        move_camera_left(&(render_context.camera), speed);
+    }
+    if (keystate[SDL_SCANCODE_D]) {
+        move_camera_right(&(render_context.camera), speed);
+    }
 }
 

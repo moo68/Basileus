@@ -9,12 +9,11 @@ ASAN_BIN := build/$(notdir $(CURDIR))-asan
 UNAME_S := $(shell uname -s)
 
 # Common libraries
-GLFW    := $(shell pkg-config --libs glfw3)
 SDL3    := $(shell pkg-config --libs sdl3)
 CGLM    := $(shell pkg-config --libs cglm)
 
 # Common flags
-CFLAGS += $(shell pkg-config --cflags glfw3)
+CFLAGS += $(shell pkg-config --cflags sdl3)
 CFLAGS += $(shell pkg-config --cflags cglm) 
 
 # Platform-specific linker flags
@@ -31,13 +30,13 @@ endif
 
 $(BIN): $(SRC)
 	@mkdir -p build
-	$(CC) $(CFLAGS) $^ -o $@ $(SDL3) $(GLFW) $(OPENGL) $(CGLM) $(SYS_LIBS)
+	$(CC) $(CFLAGS) $^ -o $@ $(SDL3) $(OPENGL) $(CGLM) $(SYS_LIBS)
 
 .PHONY: asan
 asan: CFLAGS += -fsanitize=address -g -O0 -fno-omit-frame-pointer
 asan: $(SRC)
 	@mkdir -p build
-	$(CC) $(CFLAGS) $^ -o $(ASAN_BIN) $(SDL3) $(GLFW) $(OPENGL) $(CGLM) $(SYS_LIBS)
+	$(CC) $(CFLAGS) $^ -o $(ASAN_BIN) $(SDL3) $(OPENGL) $(CGLM) $(SYS_LIBS)
 
 .PHONY: clean
 clean:

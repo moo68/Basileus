@@ -1,6 +1,5 @@
 #include "basileus/camera.h"
 
-#include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
 
@@ -65,21 +64,11 @@ void move_camera_right(Camera *c, float distance) {
     glm_vec3_add(c->position, displacement, c->position);
 }
 
-void look_camera_around(Camera *c, float x_pos, float y_pos, float *last_x, 
-        float *last_y, bool *first_mouse) {
-    if (*first_mouse) {
-        *last_x = x_pos;
-        *last_y = y_pos;
-        *first_mouse = false;
-    }
-
-    float x_offset = x_pos - *last_x;
-    float y_offset = *last_y - y_pos; // Reversed since y-coordinates go from bottom to top
-    *last_x = x_pos;
-    *last_y = y_pos;
-
+void look_camera_around(Camera *c, float x_offset, float y_offset) {
     x_offset *= c->sensitivity;
     y_offset *= c->sensitivity;
+
+    y_offset *= -1; // Reversed since y-cords go from bottom to top
 
     c->yaw += x_offset;
     c->pitch += y_offset;
