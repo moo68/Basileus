@@ -3,6 +3,8 @@
 
 #define MAX_POINT_LIGHTS (32)
 
+#include <stdbool.h>
+
 #include <cglm/cglm.h>
 
 #include "basileus/camera.h"
@@ -24,6 +26,8 @@ typedef struct RenderContext {
 
     float delta_time;
     float last_frame; 
+
+    bool is_wireframe;
 } RenderContext;
 
 typedef struct RenderObject {

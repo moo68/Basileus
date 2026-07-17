@@ -23,15 +23,13 @@
 
 SDL_Window *create_window();
 SDL_GLContext create_context(SDL_Window *window);
+void window_resize_callback(SDL_Event *event);
 void key_callback(SDL_Event *event);
 void mouse_callback(SDL_Event *event);
 void process_input(void);
 
 
 RenderContext render_context = {0};
-
-// TODO: Store is_wireframe in the render context
-bool is_wireframe = false;
 
 int main(int argc, char *argv[]) { 
     (void)argv;
@@ -89,6 +87,8 @@ int main(int argc, char *argv[]) {
     glm_mat4_identity(render_context.projection);
     glm_perspective(glm_rad(45.0f), (float)window_width / (float)window_height, 
                 0.1f, 100.0f, render_context.projection);
+
+    render_context.is_wireframe = false;
  
     // TODO: Lights should store a Transform for their position, not their own separate vec3?
     vec3 light_pos, light_amb, light_diff, light_spec, light_dir;
@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
                     is_running = false;
                     break;
                 case SDL_EVENT_WINDOW_RESIZED:
-                    glViewport(0, 0, event.window.data1, event.window.data2);
+                    window_resize_callback(&event);
                     break;
                 case SDL_EVENT_KEY_DOWN:
                     key_callback(&event);
@@ -348,6 +348,13 @@ SDL_GLContext create_context(SDL_Window *window) {
     return gl_context;
 }
 
+void window_resize_callback(SDL_Event *event) {
+    glViewport(0, 0, event->window.data1, event->window.data2);
+    float aspect_ratio = (float)event->window.data1 / (float)event->window.data2;
+    glm_perspective(glm_rad(45.0f), aspect_ratio, 0.1f, 100.0f,
+                    render_context.projection);
+}
+
 void key_callback(SDL_Event *event) {
     // SDL fires KEY_DOWN repeatedly if key-repeat is on
     if (event->key.repeat) return;
@@ -356,13 +363,13 @@ void key_callback(SDL_Event *event) {
     /*if (event->key.key == SDLK_ESCAPE) {
         is_running = false;
     }*/
-    else if (!is_wireframe && event->key.key == SDLK_TAB) {
+    else if (!render_context.is_wireframe && event->key.key == SDLK_TAB) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        is_wireframe = true;
+        render_context.is_wireframe = true;
     }
-    else if (is_wireframe && event->key.key == SDLK_TAB) {
+    else if (render_context.is_wireframe && event->key.key == SDLK_TAB) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        is_wireframe = false;
+        render_context.is_wireframe = false;
     }
 }
 
