@@ -93,7 +93,7 @@ unsigned int create_shader_program(const GLchar *vertex_source,
     return shader_program;
 }
 
-SimpleShader *create_simple_shader(unsigned int shader_program) {
+/*SimpleShader *create_simple_shader(unsigned int shader_program) {
     SimpleShader *s = malloc(sizeof(SimpleShader));
     
     s->base.shader_program = shader_program;
@@ -112,7 +112,7 @@ void upload_simple_uniforms(RenderContext *context, RenderObject *object) {
     glUniformMatrix4fv(shader->view_loc, 1, GL_FALSE, (float *)context->camera.view);
     glUniformMatrix4fv(shader->projection_loc, 1, GL_FALSE, (float *)context->projection);
     glUniformMatrix4fv(shader->model_loc, 1, GL_FALSE, (float *)object->transform.model);
-}
+}*/
 
 PhongShader *create_phong_shader(unsigned int shader_program) { 
     PhongShader *s = malloc(sizeof(PhongShader));
@@ -139,14 +139,15 @@ PhongShader *create_phong_shader(unsigned int shader_program) {
     return s;
 }
 
-void upload_phong_uniforms(RenderContext *context, RenderObject *object) {
-    PhongShader *shader = (PhongShader *)object->shader;
+void upload_phong_uniforms(RenderContext *context, RenderComponent *render,
+                           Transform *transform) {
+    PhongShader *shader = (PhongShader *)render->shader;
 
     glUniformMatrix4fv(shader->view_loc, 1, GL_FALSE, (float *)context->camera.view);
     glUniformMatrix4fv(shader->projection_loc, 1, GL_FALSE, (float *)context->projection);
-    glUniformMatrix4fv(shader->model_loc, 1, GL_FALSE, (float *)object->transform.model);
+    glUniformMatrix4fv(shader->model_loc, 1, GL_FALSE, (float *)transform->model);
 
-    PhongMaterial *material = (PhongMaterial *)object->material;
+    PhongMaterial *material = (PhongMaterial *)render->material;
 
     glUniform3fv(shader->ambient_loc, 1, (float *)material->ambient);
     glUniform3fv(shader->diffuse_loc, 1, (float *)material->diffuse);
@@ -162,7 +163,7 @@ void upload_phong_uniforms(RenderContext *context, RenderObject *object) {
     glUniform3fv(shader->view_pos_loc, 1, (float *)context->camera.position);
 }
 
-TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program) {
+/*TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program) {
     TexturedPhongShader *s = malloc(sizeof(TexturedPhongShader));
 
     s->base.shader_program = shader_program;
@@ -250,5 +251,5 @@ void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object
     glBindTexture(GL_TEXTURE_2D, material->diffuse_tex);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, material->specular_tex);
-}
+}*/
 

@@ -37,7 +37,7 @@ typedef struct RenderObject {
     void *material;
 } RenderObject;
 
-typedef struct {
+typedef struct RenderComponent {
     Mesh *mesh;
     Shader *shader;
     void *material;

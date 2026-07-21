@@ -4,13 +4,17 @@
 #include <stdlib.h>
 #include <glad/gl.h>
 
+#include "basileus/transform.h"
+
 
 typedef struct RenderObject RenderObject;
 typedef struct RenderContext RenderContext;
+typedef struct RenderComponent RenderComponent;
 
 typedef struct Shader {
     GLuint shader_program;
-    void (*upload_uniforms)(RenderContext *context, RenderObject *object);
+    void (*upload_uniforms)(RenderContext *context, RenderComponent *render,
+                            Transform *transform);
 } Shader;
 
 typedef struct {
@@ -80,7 +84,8 @@ void upload_simple_uniforms(RenderContext *context, RenderObject *object);
 
 PhongShader *create_phong_shader(unsigned int shader_program);
 
-void upload_phong_uniforms(RenderContext *context, RenderObject *object);
+void upload_phong_uniforms(RenderContext *context, RenderComponent *render,
+                           Transform *transform);
 
 TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program);
 

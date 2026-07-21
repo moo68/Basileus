@@ -19,6 +19,7 @@
 #include "basileus/debug_geometry.h"
 #include "basileus/renderer.h"
 #include "basileus/light.h"
+#include "basileus/entity.h"
 
 
 SDL_Window *create_window();
@@ -59,16 +60,16 @@ int main(int argc, char *argv[]) {
     // Shaders
     /*unsigned int textured_shader_program = create_shader_program("assets/shaders/textured_vert.glsl",
             "assets/shaders/textured_frag.glsl");*/
-    /*unsigned int phong_shader_program = create_shader_program("assets/shaders/phong_vert.glsl",
-            "assets/shaders/phong_frag.glsl");*/
+    unsigned int phong_shader_program = create_shader_program("assets/shaders/phong_vert.glsl",
+            "assets/shaders/phong_frag.glsl");
     unsigned int light_source_shader_program = create_shader_program("assets/shaders/light_source_vert.glsl",
             "assets/shaders/light_source_frag.glsl");
-    unsigned int textured_phong_shader_program = create_shader_program("assets/shaders/textured_phong_vert.glsl",
-            "assets/shaders/textured_phong_frag.glsl");
+    /*unsigned int textured_phong_shader_program = create_shader_program("assets/shaders/textured_phong_vert.glsl",
+            "assets/shaders/textured_phong_frag.glsl");*/
  
-    //PhongShader *phong_shader = create_phong_shader(phong_shader_program);
+    PhongShader *phong_shader = create_phong_shader(phong_shader_program);
     //SimpleShader *light_source_shader = create_simple_shader(light_source_shader_program);
-    TexturedPhongShader *textured_phong_shader = create_textured_phong_shader(textured_phong_shader_program);
+    //TexturedPhongShader *textured_phong_shader = create_textured_phong_shader(textured_phong_shader_program);
 
     // Meshes and Buffers
     int duck_mesh_count = 0;
@@ -106,10 +107,17 @@ int main(int argc, char *argv[]) {
     glm_vec3_copy((vec3){1.0f, 0.5f, 0.31f}, diffuse); 
     glm_vec3_copy((vec3){0.5f, 0.5f, 0.5f}, specular); 
     float shininess = 32.0f;
-    //PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
+    PhongMaterial *phong_mat = create_phong_material(ambient, diffuse, specular, shininess);
 
-    TexturedPhongMaterial *textured_phong_mat =
-        create_textured_phong_material(texture, specular_map, shininess);
+    /*TexturedPhongMaterial *textured_phong_mat =
+        create_textured_phong_material(texture, specular_map, shininess);*/
+
+    // RenderComponents
+    RenderComponent duck_render = {
+        .mesh = &duck_meshes[0],
+        .shader = (Shader *)(phong_shader), 
+        .material = phong_mat
+    };
  
     // Transforms
     Transform object_transform = create_transform();
@@ -122,80 +130,14 @@ int main(int argc, char *argv[]) {
     Transform duck_transform = create_transform();
     scale_transform(&duck_transform, (vec3){0.01f, 0.01f, 0.01f});
 
-    // RenderObjects 
-    /*vec3 cube_positions[] = {
-        { 0.0f,  0.0f,  0.0f},
-        { 2.0f,  5.0f, -15.0f},
-        {-1.5f, -2.2f, -2.5f},
-        {-3.8f, -2.0f, -12.3f},
-        { 2.4f, -0.4f, -3.5f},
-        {-1.7f,  3.0f, -7.5f},
-        { 1.3f, -2.0f, -2.5f},
-        { 1.5f,  2.0f, -2.5f},
-        { 1.5f,  0.2f, -1.5f},
-        {-1.3f,  1.0f, -1.5f}
-    };
+    // Entity Component System
+    EntityTracker entity_tracker = create_entity_tracker();
+    ComponentTracker component_tracker = create_component_tracker();
 
-    vec3 point_light_positions[] = {
-	    { 0.7f,  0.2f,  2.0f},
-    	{ 2.3f, -3.3f, -4.0f},
-	    {-4.0f,  2.0f, -12.0f},
-    	{ 0.0f,  0.0f, -3.0f}
-    };
+    EntityHandle entity0 = create_entity(&entity_tracker);
+    add_transform_component(&entity_tracker, &component_tracker, entity0, duck_transform);
+    add_render_component(&entity_tracker, &component_tracker, entity0, duck_render);
 
-    render_context.num_point_lights = 4;
-    for (int i = 0; i < render_context.num_point_lights; i++) {
-        PointLight pl = create_point_light(point_light_positions[i], ambient,
-                                           specular, diffuse, 1.0f, 0.22f,
-                                           0.20f);
-        render_context.point_lights[i] = pl;
-    }
-
-    RenderObject render_objects[14];
-    int num_render_objects = 14;
-
-    for (int i = 0; i < 10; i++) {
-        translate_transform(&object_transform, cube_positions[i]);
-        rotate_transform(&object_transform, (vec3){1.0f, 0.5f, 0.0f}, i * 20);
-        RenderObject crate = {
-            .mesh = &tex_cube_mesh,
-            .transform = object_transform,
-            .shader = (Shader *)textured_phong_shader,
-            .material = textured_phong_mat
-        };
-        render_objects[i] = crate;
-    }
-
-    for (int i = 10; i < 14; i++) {
-        translate_transform(&light_transform, point_light_positions[i - 10]);
-        RenderObject light = {
-            .mesh = &cube_mesh,
-            .transform = light_transform,
-            .shader = (Shader *)light_source_shader,
-            .material = NULL
-        };
-        render_objects[i] = light;
-    }*/
-
-    RenderObject render_objects[2];
-    int num_render_objects = 2;
-
-    RenderObject duck = {
-        .mesh = &duck_meshes[0],
-        .transform = duck_transform,
-        .shader = (Shader *)textured_phong_shader,
-        .material = textured_phong_mat
-    };
-    render_objects[0] = duck;
-
-    RenderObject cube = {
-        .mesh = &cube_meshes[0],
-        .transform = object_transform,
-        .shader = (Shader *)textured_phong_shader,
-        .material = textured_phong_mat
-    };
-    render_objects[1] = cube;
- 
     // Render Loop
     bool is_running = true;
     SDL_Event event = {0};
@@ -230,16 +172,29 @@ int main(int argc, char *argv[]) {
 
         set_view_matrix(&(render_context.camera));
 
-        for (int i = 0; i < num_render_objects; i++) {
-            RenderObject curr_object = render_objects[i];
+        // Draw all renderable entities
+        for (uint32_t i = 0; i < component_tracker.render_component_count; i++) {
+            // First, fetch entity data
+            RenderComponent curr_render_component = 
+                component_tracker.render_components[i];
 
-            glBindVertexArray(curr_object.mesh->vao);
+            uint32_t curr_entity_id = component_tracker.dense_render_entities[i];
+            uint32_t curr_transform_index = 
+                component_tracker.sparse_transform_entities[curr_entity_id];
 
-            glUseProgram(curr_object.shader->shader_program);
+            Transform curr_transform = 
+                component_tracker.transform_components[curr_transform_index];
 
-            curr_object.shader->upload_uniforms(&render_context, &curr_object);
+            // Then, upload that data to the GPU and draw on screen
+            glBindVertexArray(curr_render_component.mesh->vao);
 
-            glDrawElements(GL_TRIANGLES, curr_object.mesh->index_count, GL_UNSIGNED_INT, 0);
+            glUseProgram(curr_render_component.shader->shader_program);
+
+            curr_render_component.shader->
+                upload_uniforms(&render_context, &curr_render_component, &curr_transform);
+
+            glDrawElements(GL_TRIANGLES, curr_render_component.mesh->index_count,
+                           GL_UNSIGNED_INT, 0);
         }
 
         // "sunrise" and "sunset"
@@ -261,7 +216,8 @@ int main(int argc, char *argv[]) {
     cleanup_mesh(&duck_meshes[0]);
     cleanup_mesh(&cube_meshes[0]);
     glDeleteProgram(light_source_shader_program);
-    glDeleteProgram(textured_phong_shader_program);
+    glDeleteProgram(phong_shader_program);
+    //glDeleteProgram(textured_phong_shader_program);
 
     SDL_GL_DestroyContext(gl_context);
     SDL_DestroyWindow(window);

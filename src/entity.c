@@ -82,6 +82,17 @@ ComponentTracker create_component_tracker(void) {
     memset(ct.dense_transform_entities, UINT32_MAX,
            sizeof(ct.dense_transform_entities));
 
+    memset(ct.sparse_render_entities, UINT32_MAX,
+           sizeof(ct.sparse_render_entities));
+    memset(ct.dense_render_entities, UINT32_MAX,
+           sizeof(ct.dense_render_entities));
+
+    memset(ct.sparse_point_light_entities, UINT32_MAX,
+           sizeof(ct.sparse_point_light_entities));
+    memset(ct.dense_point_light_entities, UINT32_MAX,
+           sizeof(ct.dense_point_light_entities));
+
+
     return ct;
 }
 
@@ -156,12 +167,14 @@ void add_render_component(EntityTracker *et, ComponentTracker *ct,
                           EntityHandle handle, RenderComponent render) {
     if (!is_entity_alive(et, handle)) {
         // TODO: add a return type to indicate success/failure?
+        printf("add_render_component() failed! Entity is not alive!\n");
         return;
     }
 
     // Check that the entity doesn't already have a same component
     if (ct->sparse_render_entities[handle.id] != UINT32_MAX) {
         // TODO: add a return type to indicate success/failure?
+        printf("add_render_component() failed! Entity already has component!\n");
         return;
     }
 
