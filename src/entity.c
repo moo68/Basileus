@@ -129,8 +129,8 @@ void remove_transform_component(EntityTracker *et, ComponentTracker *ct,
 
     // Delete component data, keeping the array dense
     if (component_index != last_component_index) {
-        memcpy(&ct->transform_components[component_index], last_component,
-               sizeof(Transform));
+        ct->transform_components[component_index] = 
+            ct->transform_components[last_component_index];
 
         // Make sure to set the last component's sparse array data to its new location
         uint32_t last_component_id = ct->dense_transform_entities[last_component_index];
@@ -150,5 +150,139 @@ void remove_transform_component(EntityTracker *et, ComponentTracker *ct,
     }
 
     ct->dense_transform_entities[last_component_index] = UINT32_MAX;
+}
+
+void add_render_component(EntityTracker *et, ComponentTracker *ct,
+                          EntityHandle handle, RenderComponent render) {
+    if (!is_entity_alive(et, handle)) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    // Check that the entity doesn't already have a same component
+    if (ct->sparse_render_entities[handle.id] != UINT32_MAX) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    // Actually add the component and update associated data
+    uint32_t component_index = ct->render_component_count;
+
+    ct->sparse_render_entities[handle.id] = component_index;
+
+    ct->render_components[component_index] = render;
+    ct->render_component_count++;
+
+    ct->dense_render_entities[component_index] = handle.id;
+}
+
+void remove_render_component(EntityTracker *et, ComponentTracker *ct,
+                             EntityHandle handle) {
+    if (!is_entity_alive(et, handle)) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    // Check that the component being removed actually exists
+    if (ct->sparse_render_entities[handle.id] == UINT32_MAX) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    uint32_t component_index = ct->sparse_render_entities[handle.id];
+    uint32_t last_component_index = ct->render_component_count - 1;
+
+    RenderComponent *last_component = &ct->render_components[last_component_index];
+
+    // Delete component data, keeping the array dense
+    if (component_index != last_component_index) {
+        ct->render_components[component_index] = 
+            ct->render_components[last_component_index];
+
+        // Make sure to set the last component's sparse array data to its new location
+        uint32_t last_component_id = ct->dense_render_entities[last_component_index];
+        ct->sparse_render_entities[last_component_id] = component_index;
+    }
+
+    memset(last_component, 0, sizeof(RenderComponent));
+    ct->render_component_count--;
+
+    // Delete sparse entity ID
+    ct->sparse_render_entities[handle.id] = UINT32_MAX;
+
+    // Delete entity ID reference, keeping the array dense
+    if (component_index != last_component_index) {
+        ct->dense_render_entities[component_index] = 
+            ct->dense_render_entities[last_component_index];
+    }
+
+    ct->dense_render_entities[last_component_index] = UINT32_MAX;
+}
+
+void add_point_light_component(EntityTracker *et, ComponentTracker *ct,
+                               EntityHandle handle, PointLight point_light) {
+    if (!is_entity_alive(et, handle)) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    // Check that the entity doesn't already have a same component
+    if (ct->sparse_point_light_entities[handle.id] != UINT32_MAX) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    // Actually add the component and update associated data
+    uint32_t component_index = ct->point_light_component_count;
+
+    ct->sparse_point_light_entities[handle.id] = component_index;
+
+    ct->point_light_components[component_index] = point_light;
+    ct->point_light_component_count++;
+
+    ct->dense_point_light_entities[component_index] = handle.id;
+}
+
+void remove_point_light_component(EntityTracker *et, ComponentTracker *ct,
+                                  EntityHandle handle) {
+    if (!is_entity_alive(et, handle)) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    // Check that the component being removed actually exists
+    if (ct->sparse_point_light_entities[handle.id] == UINT32_MAX) {
+        // TODO: add a return type to indicate success/failure?
+        return;
+    }
+
+    uint32_t component_index = ct->sparse_point_light_entities[handle.id];
+    uint32_t last_component_index = ct->point_light_component_count - 1;
+
+    PointLight *last_component = &ct->point_light_components[last_component_index];
+
+    // Delete component data, keeping the array dense
+    if (component_index != last_component_index) {
+        ct->point_light_components[component_index] = 
+            ct->point_light_components[last_component_index];
+
+        // Make sure to set the last component's sparse array data to its new location
+        uint32_t last_component_id = ct->dense_point_light_entities[last_component_index];
+        ct->sparse_point_light_entities[last_component_id] = component_index;
+    }
+
+    memset(last_component, 0, sizeof(PointLight));
+    ct->point_light_component_count--;
+
+    // Delete sparse entity ID
+    ct->sparse_point_light_entities[handle.id] = UINT32_MAX;
+
+    // Delete entity ID reference, keeping the array dense
+    if (component_index != last_component_index) {
+        ct->dense_point_light_entities[component_index] = 
+            ct->dense_point_light_entities[last_component_index];
+    }
+
+    ct->dense_point_light_entities[last_component_index] = UINT32_MAX;
 }
 

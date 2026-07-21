@@ -81,11 +81,11 @@ typedef struct {
     Transform transform_components[MAX_ENTITIES];
     uint32_t transform_component_count;
 
-    RenderObject render_components[MAX_ENTITIES];
+    RenderComponent render_components[MAX_ENTITIES];
     uint32_t render_component_count;
 
     PointLight point_light_components[MAX_ENTITIES];
-    uint32_t point_light_count;
+    uint32_t point_light_component_count;
 
     /*
      * The dense entity arrays directly mirror the component arrays of the
@@ -117,6 +117,18 @@ void add_transform_component(EntityTracker *et, ComponentTracker *ct,
 
 void remove_transform_component(EntityTracker *et, ComponentTracker *ct,
                                 EntityHandle handle);
+
+void add_render_component(EntityTracker *et, ComponentTracker *ct,
+                          EntityHandle handle, RenderComponent render);
+
+void remove_render_component(EntityTracker *et, ComponentTracker *ct,
+                             EntityHandle handle);
+
+void add_point_light_component(EntityTracker *et, ComponentTracker *ct,
+                               EntityHandle handle, PointLight point_light);
+
+void remove_point_light_component(EntityTracker *et, ComponentTracker *ct,
+                                  EntityHandle handle);
 
 #endif
 
