@@ -1,63 +1,28 @@
 #include "basileus/entity.h"
 
 #include <stdlib.h>
-#include <stdbool.h>
-
-#include "basileus/transform.h"
 
 
-/*typedef struct {
-    uint32_t id;
-    uint32_t generation;
+entity_tracker_t create_entity_tracker(void) {
+    entity_tracker_t tracker = {0};
 
-    bool is_active;
-
-    Transform transform;
-} Entity;*/
-
-
-// TODO: Figure out the entity ID stuff, currently very broken.
-// Do IDs actually correspond to entity array index? Or not? Decide.
-// Hint: they probably don't!
-
-Scene initialize_scene(void) {
-    Scene s = {0};
-
-    s.entity_count = 0;
-    s.entity_capacity = 256;
-
-    s.entity_list = calloc(s.entity_capacity, sizeof(Entity));
-
-    return s;
-}
-
-void create_entity(Scene *scene) {
-    Entity *e = NULL;
-
-    for (uint32_t i = 0; i < scene->entity_capacity; i++) {
-        e = &scene->entity_list[i];
-
-        if (!e->is_active) {
-            e->id = i;
-            e->is_active = true;
-            break;
-        }
+    for (uint32_t i = 0; i < MAX_ENTITIES; i++) {
+        tracker.free_stack[i] = i;
     }
 
-    e->transform = create_transform();
-
-    scene->entity_count++;
+    return tracker;
 }
 
-void destroy_entity(Scene *scene, uint32_t id) {
-    Entity *e = &scene->entity_list[id];
+uint32_t create_entity(entity_tracker_t *tracker) {
+    uint32_t entity_id = tracker->free_stack[tracker->used_count];
+    tracker->used_count++;
 
-    e->is_active = false;
-    e->generation++;
+    return entity_id;
+}
 
-    if (id != (scene->entity_count - 1)) {
-        *e = scene->entity_list[scene->entity_count - 1];
-        destroy_entity(scene, (scene->entity_count - 1));
-    }
+void destroy_entity(entity_tracker_t *tracker, uint32_t id) {
+    tracker->generations[id]++;
+    tracker->used_count--;
+    tracker->free_stack[tracker->used_count] = id;
 }
 
