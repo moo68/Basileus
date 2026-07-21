@@ -2,6 +2,10 @@
 #define ENTITY_H
 
 #include "basileus/transform.h"
+#include "basileus/renderer.h"
+#include "basileus/light.h"
+
+#include <stdbool.h>
 
 /* 
  * This number should never be UINT32_MAX or any other maximum. Maximum is
@@ -9,6 +13,17 @@
  */
 #define MAX_ENTITIES (16)
 
+
+/*
+ * The purpose of EntityHandle is to give functions outside the EntityTracker
+ * access to both an entity's ID value as well as its generation. Thus, a
+ * requested entity can be checked against the current active generation,
+ * preventing nasty mishaps.
+ */
+typedef struct {
+    uint32_t id;
+    uint32_t generation;
+} EntityHandle;
 
 /*
  * The system of arrays used to keep track of entity data. This only deals with
@@ -39,7 +54,7 @@ typedef struct {
      * free_stack uses as its stack pointer.
      */
     uint32_t used_count;       
-} entity_tracker_t;
+} EntityTracker;
 
 /*
  * The system of arrays that tracks all possible components used by all possible
@@ -54,6 +69,8 @@ typedef struct {
      * means no entity contains the component that the array points to.
      */
     uint32_t sparse_transform_entities[MAX_ENTITIES];
+    uint32_t sparse_render_entities[MAX_ENTITIES];
+    uint32_t sparse_point_light_entities[MAX_ENTITIES];
 
     /*
      * The component arrays are dense arrays that contain actual component
@@ -64,6 +81,12 @@ typedef struct {
     Transform transform_components[MAX_ENTITIES];
     uint32_t transform_component_count;
 
+    RenderObject render_components[MAX_ENTITIES];
+    uint32_t render_component_count;
+
+    PointLight point_light_components[MAX_ENTITIES];
+    uint32_t point_light_count;
+
     /*
      * The dense entity arrays directly mirror the component arrays of the
      * same component type. For example, if a component in a component array
@@ -73,21 +96,27 @@ typedef struct {
      * from one specific component to the entity that uses that component.
      */
     uint32_t dense_transform_entities[MAX_ENTITIES];
-} component_tracker_t;
+    uint32_t dense_render_entities[MAX_ENTITIES];
+    uint32_t dense_point_light_entities[MAX_ENTITIES];
+} ComponentTracker;
 
 
-entity_tracker_t create_entity_tracker(void);
+EntityTracker create_entity_tracker(void);
 
-uint32_t create_entity(entity_tracker_t *tracker);
+EntityHandle create_entity(EntityTracker *tracker);
 
-void destroy_entity(entity_tracker_t *tracker, uint32_t id);
+void destroy_entity(EntityTracker *et, ComponentTracker *ct,
+                    EntityHandle handle);
 
-component_tracker_t create_component_tracker(void);
+bool is_entity_alive(EntityTracker *et, EntityHandle handle);
 
-void create_transform_component(component_tracker_t *tracker, uint32_t id,
-                                Transform transform);
+ComponentTracker create_component_tracker(void);
 
-void destroy_transform_component(component_tracker_t *tracker, uint32_t id);
+void add_transform_component(EntityTracker *et, ComponentTracker *ct,
+                             EntityHandle handle, Transform transform);
+
+void remove_transform_component(EntityTracker *et, ComponentTracker *ct,
+                                EntityHandle handle);
 
 #endif
 
