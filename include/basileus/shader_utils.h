@@ -7,7 +7,6 @@
 #include "basileus/transform.h"
 
 
-typedef struct RenderObject RenderObject;
 typedef struct RenderContext RenderContext;
 typedef struct RenderComponent RenderComponent;
 
@@ -78,18 +77,18 @@ unsigned int compile_shader_file(const GLchar *shader_source, GLenum shader_type
 
 unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fragment_source);
 
-SimpleShader *create_simple_shader(unsigned int shader_program);
+//SimpleShader *create_simple_shader(unsigned int shader_program);
 
-void upload_simple_uniforms(RenderContext *context, RenderObject *object);
+//void upload_simple_uniforms(RenderContext *context, RenderObject *object);
 
 PhongShader *create_phong_shader(unsigned int shader_program);
 
 void upload_phong_uniforms(RenderContext *context, RenderComponent *render,
                            Transform *transform);
 
-TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program);
+//TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program);
 
-void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object);
+//void upload_textured_phong_uniforms(RenderContext *context, RenderObject *object);
 
 #endif
 

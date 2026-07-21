@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     glViewport(0, 0, window_width, window_height);
 
     // Turn on VSync
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(0);
 
     // Shaders
     /*unsigned int textured_shader_program = create_shader_program("assets/shaders/textured_vert.glsl",
@@ -143,6 +143,10 @@ int main(int argc, char *argv[]) {
     SDL_Event event = {0};
     render_context.last_frame = SDL_GetTicks();
 
+    uint64_t last_time = SDL_GetTicks();
+    int frame_count = 0;
+    double fps = 0.0;
+
     while (is_running) {
         uint64_t current_frame = SDL_GetTicks();
         render_context.delta_time = (current_frame - render_context.last_frame) / 1000.0f;
@@ -195,6 +199,15 @@ int main(int argc, char *argv[]) {
 
             glDrawElements(GL_TRIANGLES, curr_render_component.mesh->index_count,
                            GL_UNSIGNED_INT, 0);
+        }
+
+        frame_count++;
+        uint64_t current_time = SDL_GetTicks();
+        if (current_time - last_time >= 1000) { // every 1 second
+            fps = frame_count / ((current_time - last_time) / 1000.0);
+            SDL_Log("FPS: %.2f", fps);
+            frame_count = 0;
+            last_time = current_time;
         }
 
         // "sunrise" and "sunset"

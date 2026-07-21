@@ -30,13 +30,6 @@ typedef struct RenderContext {
     bool is_wireframe;
 } RenderContext;
 
-typedef struct RenderObject {
-    Transform transform;
-    Mesh *mesh;
-    Shader *shader;
-    void *material;
-} RenderObject;
-
 typedef struct RenderComponent {
     Mesh *mesh;
     Shader *shader;
