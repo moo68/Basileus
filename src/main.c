@@ -227,10 +227,17 @@ int main(int argc, char *argv[]) {
 
     // Shutdown cleanup
     cleanup_mesh(&duck_meshes[0]);
+    free(duck_meshes);
     cleanup_mesh(&cube_meshes[0]);
+    free(cube_meshes);
+
+    free(phong_shader);
+
     glDeleteProgram(light_source_shader_program);
     glDeleteProgram(phong_shader_program);
     //glDeleteProgram(textured_phong_shader_program);
+    
+    free(phong_mat);
 
     SDL_GL_DestroyContext(gl_context);
     SDL_DestroyWindow(window);

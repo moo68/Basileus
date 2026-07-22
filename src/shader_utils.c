@@ -61,11 +61,11 @@ unsigned int compile_shader_file(const GLchar *shader_source, GLenum shader_type
 
 unsigned int create_shader_program(const GLchar *vertex_source, 
         const GLchar *fragment_source) {
-    const char *vertex_shader_source = read_shader_file(vertex_source);
+    char *vertex_shader_source = read_shader_file(vertex_source);
     if (vertex_shader_source == NULL) {
         fprintf(stderr, "ERROR! Failed to read vertex shader!");
     }
-    const char *fragment_shader_source = read_shader_file(fragment_source); 
+    char *fragment_shader_source = read_shader_file(fragment_source); 
     if (fragment_shader_source == NULL) {
         fprintf(stderr, "ERROR! Failed to read fragment shader!"); 
     }
@@ -90,6 +90,10 @@ unsigned int create_shader_program(const GLchar *vertex_source,
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
+
+    free(vertex_shader_source);
+    free(fragment_shader_source);
+
     return shader_program;
 }
 
