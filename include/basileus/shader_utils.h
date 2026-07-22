@@ -8,11 +8,11 @@
 
 
 typedef struct RenderContext RenderContext;
-typedef struct RenderComponent RenderComponent;
+typedef struct Renderable Renderable;
 
 typedef struct Shader {
     GLuint shader_program;
-    void (*upload_uniforms)(RenderContext *context, RenderComponent *render,
+    void (*upload_uniforms)(RenderContext *context, Renderable *render,
                             Transform *transform);
 } Shader;
 
@@ -83,7 +83,7 @@ unsigned int create_shader_program(const GLchar *vertex_source, const GLchar *fr
 
 PhongShader *create_phong_shader(unsigned int shader_program);
 
-void upload_phong_uniforms(RenderContext *context, RenderComponent *render,
+void upload_phong_uniforms(RenderContext *context, Renderable *render,
                            Transform *transform);
 
 //TexturedPhongShader *create_textured_phong_shader(unsigned int shader_program);

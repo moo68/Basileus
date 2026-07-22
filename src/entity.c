@@ -164,7 +164,7 @@ void remove_transform_component(EntityTracker *et, ComponentTracker *ct,
 }
 
 void add_render_component(EntityTracker *et, ComponentTracker *ct,
-                          EntityHandle handle, RenderComponent render) {
+                          EntityHandle handle, Renderable render) {
     if (!is_entity_alive(et, handle)) {
         // TODO: add a return type to indicate success/failure?
         printf("add_render_component() failed! Entity is not alive!\n");
@@ -205,7 +205,7 @@ void remove_render_component(EntityTracker *et, ComponentTracker *ct,
     uint32_t component_index = ct->sparse_render_entities[handle.id];
     uint32_t last_component_index = ct->render_component_count - 1;
 
-    RenderComponent *last_component = &ct->render_components[last_component_index];
+    Renderable *last_component = &ct->render_components[last_component_index];
 
     // Delete component data, keeping the array dense
     if (component_index != last_component_index) {
@@ -217,7 +217,7 @@ void remove_render_component(EntityTracker *et, ComponentTracker *ct,
         ct->sparse_render_entities[last_component_id] = component_index;
     }
 
-    memset(last_component, 0, sizeof(RenderComponent));
+    memset(last_component, 0, sizeof(Renderable));
     ct->render_component_count--;
 
     // Delete sparse entity ID

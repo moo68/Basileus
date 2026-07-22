@@ -139,7 +139,7 @@ PhongShader *create_phong_shader(unsigned int shader_program) {
     return s;
 }
 
-void upload_phong_uniforms(RenderContext *context, RenderComponent *render,
+void upload_phong_uniforms(RenderContext *context, Renderable *render,
                            Transform *transform) {
     PhongShader *shader = (PhongShader *)render->shader;
 

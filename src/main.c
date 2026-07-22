@@ -112,8 +112,8 @@ int main(int argc, char *argv[]) {
     /*TexturedPhongMaterial *textured_phong_mat =
         create_textured_phong_material(texture, specular_map, shininess);*/
 
-    // RenderComponents
-    RenderComponent duck_render = {
+    // Renderables
+    Renderable duck_render = {
         .mesh = &duck_meshes[0],
         .shader = (Shader *)(phong_shader), 
         .material = phong_mat
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
         // Draw all renderable entities
         for (uint32_t i = 0; i < component_tracker.render_component_count; i++) {
             // First, fetch entity data
-            RenderComponent curr_render_component = 
+            Renderable curr_render_component = 
                 component_tracker.render_components[i];
 
             uint32_t curr_entity_id = component_tracker.dense_render_entities[i];
@@ -256,6 +256,8 @@ SDL_Window *create_window() {
 #ifdef __APPLE__
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
+                        SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #endif
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);

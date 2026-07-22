@@ -30,11 +30,11 @@ typedef struct RenderContext {
     bool is_wireframe;
 } RenderContext;
 
-typedef struct RenderComponent {
+typedef struct Renderable {
     Mesh *mesh;
     Shader *shader;
     void *material;
-} RenderComponent;
+} Renderable;
 
 #endif
 
